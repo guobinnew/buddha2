@@ -6,8 +6,6 @@
 
 <style scoped>
 .container {
-  overflow: hidden;
-  height: 100%;
   line-height: 20px;
   min-width: 800px; 
 }

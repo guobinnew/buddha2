@@ -249,6 +249,8 @@ export default {
         this.gradePhase[Number(grades[0]) - 1] +
         yuchg.number2String(Number(grades[1])) +
         "年级";
+      let gradeFullName = gradeName + yuchg.number2String(this.$store.state.user.class) + '班'
+      this.$store.commit('updateGrade', gradeFullName)  
       $(this.$el)
         .find("#buddha-gradeclass")
         .html(gradeName);

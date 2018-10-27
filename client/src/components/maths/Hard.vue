@@ -2,7 +2,7 @@
       <el-tabs type="border-card">
         <el-tab-pane label="每日口算">
          <el-button-group>
-          <el-button type="primary" icon="el-icon-edit">生成卷子</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="a">生成卷子</el-button>
           <el-button type="primary" icon="el-icon-share">显示/隐藏答案</el-button>
           <el-button type="primary" icon="el-icon-delete">保存PDF</el-button>
         </el-button-group>

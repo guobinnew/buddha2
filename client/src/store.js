@@ -11,7 +11,8 @@ export default new Vuex.Store({
     company: '',
     user: {
       name: '',
-      class: 1
+      class: 1,
+      grade: ''
     },
     pages: {
       maths: [],
@@ -19,6 +20,9 @@ export default new Vuex.Store({
       english: [],
       program: []
     }
+  },
+  getters: {
+    
   },
   mutations: {
     updateManifest(state, info) {
@@ -39,6 +43,9 @@ export default new Vuex.Store({
     updateUser(state, user) {
       state.user.name = user.name
       state.user.class = user.class
+    },
+    updateGrade(state, grade) {
+      state.user.grade = grade
     }
   },
   actions: {

@@ -2,9 +2,9 @@
       <el-tabs type="border-card">
         <el-tab-pane label="每日口算">
          <el-button-group>
-          <el-button type="primary" icon="el-icon-edit">生成卷子</el-button>
-          <el-button type="primary" icon="el-icon-share">显示/隐藏答案</el-button>
-          <el-button type="primary" icon="el-icon-delete">保存PDF</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
+          <el-button type="primary" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
+          <el-button type="primary" icon="el-icon-delete" @click="onClickSave">保存PDF</el-button>
         </el-button-group>
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="生成选项" name="1">
@@ -46,7 +46,9 @@
            </el-form>
           </el-collapse-item>
         </el-collapse>
-        <div id="page" class="buddha-page"></div>
+        <div id="buddha-page" class="buddha-page">
+          <Page v-if="content" :content="content"></Page>
+        </div>
         </el-tab-pane>
         <el-tab-pane label="成绩统计">
          成绩统计
@@ -56,10 +58,8 @@
 
 <style scoped>
 .container {
-  overflow: hidden;
-  height: 100%;
   line-height: 20px;
-  min-width: 800px; 
+  min-width: 800px;
 }
 
 .el-tabs {
@@ -73,7 +73,7 @@
 .buddha-page {
   background-color: white;
   margin: 0 auto;
-  width: 600px;
+  width: 601px;
   font-family: Microsoft YaHei;
 }
 
@@ -89,25 +89,187 @@
   line-height: 40px;
   padding: 0 12px 0 0;
 }
+
+.region table {
+  width: 600px;
+}
+
+.page {
+  background-color: white;
+  margin: 0 auto;
+  width: 600px;
+  font-family: Microsoft YaHei;
+}
+
+.page-header,
+.page-footer {
+  margin: 20px;
+  height: 5px;
+}
+
+.page-header h2 {
+  margin-bottom: 10px;
+}
+
+.pg-timestamp {
+  margin-left: 100px;
+}
+
+.pg-name {
+  margin-left: 40px;
+}
+
+.pg-grade {
+  margin-right: 40px;
+}
+
+.pg-time {
+  margin-right: 20px;
+}
+
+.pg-sign {
+  margin-right: 20px;
+}
+
+.pg-correct,
+.pg-wrong {
+  margin-right: 20px;
+}
+
+.page-header span {
+  float: right;
+}
+
+.page-footer span {
+  float: right;
+}
+
+.answer {
+  margin-left: 4px;
+  color: #333;
+  font-size: large;
+  font-weight: bold;
+}
+
+td {
+  font-size: medium;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
 </style>
 
 <script>
+import Page from "./Page.vue";
+import logger from "../../logger";
+import utils from "./utils";
+import $ from "jquery";
+import yuchg from "../../base";
+import html2canvas from 'html2canvas'
+import * as jsPDF from 'jspdf'
+
 export default {
+  components: { Page },
   data: function() {
     return {
-      activeName: '1',
+      activeName: "1",
       form: {
-        grade: '',
-        name: '',
-        date: '',
-        number: '40',
-        level: '2',
-        column: '4'
-      }
+        grade: "",
+        name: "",
+        date: "",
+        number: 40,
+        level: "2",
+        column: "4"
+      },
+      content: null
     };
   },
   methods: {
+    onClickTest() {
+      this.makeTest(Number(this.form.number), Number(this.form.column));
+    },
+    onClickAnswer() {
+      const $dom = $(this.$el);
+      $dom.find("span.answer").toggleClass("hidden");
+    },
+    onClickSave() {
+      const $dom = $(this.$el);
+      let page = $dom.find("#buddha-page")[0];
+
+      html2canvas(page, {}).then(function(canvas) {
+        var context = canvas.getContext("2d");
+        // 关闭抗锯齿
+        context.mozImageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = false;
+        context.msImageSmoothingEnabled = false;
+        context.imageSmoothingEnabled = false;
+        //返回图片dataURL，参数：图片格式和清晰度(0-1)
+        var pageData = canvas.toDataURL("image/jpeg", 1.0);
+        //方向默认竖直，尺寸ponits，格式a4[595.28,841.89]
+        var pdf = new jsPDF("", "pt", "a4");
+        //addImage后两个参数控制添加图片的尺寸，此处将页面高度按照a4纸宽高比列进行压缩
+        pdf.addImage(
+          pageData,
+          "JPEG",
+          20,
+          40,
+          535.28,
+          (535.28 / canvas.width) * canvas.height
+        );
+        var ans = $("span.answer").hasClass("hidden");
+        var date = $("input[name='date']").val();
+        if (!date || date == "") {
+          date = utils.currentTimeString();
+        }
+        pdf.save(date + (ans ? "" : "_ans") + ".pdf");
+      });
+    },
+    makeTest(num, col) {
+      logger.debug("makeTest =========", this.form);
+
+      const $dom = $(this.$el);
+      let pagebody = $dom.find("#buddha-page");
+
+      // 生成Data
+      let data = {};
+      data.info = {};
+      data.info.time = this.form.date;
+      data.info.grade = this.form.grade;
+      data.info.name = this.form.name;
+      data.col = 24 / col;
+
+      let level = this.form.level;
+      let list = [];
+      var row = [];
+      for (let i = 0; i < num; i++) {
+        //  随机生成1000以内加减法
+        if (i % col == 0) {
+          row = [];
+        }
+        row.push((utils.randomSingleTest(1000, 1, Number(level))));
+        if (i % col == col - 1) {
+          list.push([].concat(row));
+        }
+      }
+
+      data.list = list;
+      logger.debug('print data', data)
+      this.content = data;
+    },
+    updateProfile() {
+      this.form.grade = this.$store.state.user.grade;
+      this.form.name = this.$store.state.user.name;
+    }
   },
-  mounted: function() {}
+  mounted: function() {
+    this.form.date = utils.currentTimeString();
+    this.updateProfile();
+  },
+  activated: function() {
+    this.updateProfile();
+  }
 };
 </script>
+
