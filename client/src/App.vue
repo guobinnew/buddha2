@@ -320,6 +320,9 @@ export default {
       this.showProfile();
       this.showFooter();
     });
+
+    this.$router.push(this.getPage(this.activeCourseIndex, this.activeGradeIndex));
+
   }
 };
 </script>

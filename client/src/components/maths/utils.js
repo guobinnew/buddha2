@@ -1,4 +1,5 @@
 const Opers = ['+', '-']
+const Opers2 = ['✖️', '➗']
 const Week = ['日', '一', '二', '三', '四', '五', '六']
 
 // 生成随机数
@@ -8,7 +9,7 @@ function randomNumber(max, min = 0) {
 
 const utils = {
   // 随机生一个加减计算，结果在指定范围内
-  randomSingleTest: function(max, min = 0, level = 1) {
+  randomSimpleTest: function(max, min = 0, level = 1) {
     let a = 0
     let b = 0
     let res = 0
@@ -59,6 +60,53 @@ const utils = {
     }
   },
 
+  // 随机生一个乘除计算
+  randomHardTest: function(style, level = 1) {
+    let a = 0
+    let b = 0
+    let res = 0
+    let op = Opers2[style - 1]
+    let eq = '='
+
+    if (level === 1) {
+      // 随机取1个数字
+      a = randomNumber(99, 10)
+      // 随机取第2个数字
+      b = randomNumber(9, 1)
+    } else if (level === 2) {
+      // 随机取1个数字
+      a = randomNumber(99, 10)
+      // 随机取第2个数字
+      b = randomNumber(99, 10)
+    } else {
+      // 随机取1个数字
+      a = randomNumber(999, 100)
+      // 随机取第2个数字
+      b = randomNumber(99, 10)
+    }
+    res = a * b
+
+    let tmp = 0
+    if (style === 2) { // 除法
+      if (a > b) {
+        tmp = b
+        b = a
+        a = res
+        res = tmp
+      } else {
+        tmp = a
+        a = res
+        res = tmp
+      }
+    }
+
+    var arr = [a, op, b, eq]
+    return {
+      q: arr.join(' '),
+      a: res
+    }
+  },
+
   currentTime: function() {
     let date = new Date()
     const year = date.getFullYear() //获取当前年份
@@ -70,6 +118,13 @@ const utils = {
 
   currentTimeString: function() {
     let date = new Date()
+    const year = date.getFullYear() //获取当前年份
+    const mon = date.getMonth() + 1 //获取当前月份
+    const da = date.getDate() //获取当前日
+    return year + '-' + mon + '-' + da
+  },
+
+  datetimeString: function(date) {
     const year = date.getFullYear() //获取当前年份
     const mon = date.getMonth() + 1 //获取当前月份
     const da = date.getDate() //获取当前日

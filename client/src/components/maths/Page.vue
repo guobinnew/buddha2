@@ -13,7 +13,7 @@
     <el-row :gutter="20" v-for="row in content.list">
       <template v-for="v in row">
       <el-col :span="content.col">
-        <div class="grid-content">{{ v.q }}<span class="answer hidden">{{ v.a }}</span></div>
+        <div :style="{ 'min-height': contentHeight + 'px' }">{{ v.q }}<span class="answer hidden">{{ v.a }}</span></div>
       </el-col>
       </template>
     </el-row>
@@ -34,10 +34,6 @@
   height: 1px;
   width: 100%;
   color: #333;
-}
-
-.grid-content {
-  min-height: 40px;
 }
 
 .page {
@@ -93,11 +89,16 @@ import yuchg from "../../base";
 
 export default {
   name: "Page",
-  props: ["content"],
+  props: ["content", "minLength"],
   data: function() {
     return {
       showHeader: false
     };
+  },
+  computed: {
+    contentHeight: function() {
+      return this.minLength ? Number(this.minLength) : 40 
+    }
   },
   methods: {
   },

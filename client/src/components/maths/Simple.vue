@@ -20,7 +20,7 @@
             </el-form-item>
             <el-form-item label="日期">
                <el-col :span="11">
-                <el-date-picker type="date" placeholder="选择日期" v-model="form.date" style="width: 100%;"></el-date-picker>
+                <el-date-picker type="date" placeholder="选择日期" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd" v-model="form.date" style="width: 100%;"></el-date-picker>
               </el-col>
               <el-col class="line" :span="2">数目</el-col>
               <el-col :span="11">
@@ -88,72 +88,6 @@
   color: #606266;
   line-height: 40px;
   padding: 0 12px 0 0;
-}
-
-.region table {
-  width: 600px;
-}
-
-.page {
-  background-color: white;
-  margin: 0 auto;
-  width: 600px;
-  font-family: Microsoft YaHei;
-}
-
-.page-header,
-.page-footer {
-  margin: 20px;
-  height: 5px;
-}
-
-.page-header h2 {
-  margin-bottom: 10px;
-}
-
-.pg-timestamp {
-  margin-left: 100px;
-}
-
-.pg-name {
-  margin-left: 40px;
-}
-
-.pg-grade {
-  margin-right: 40px;
-}
-
-.pg-time {
-  margin-right: 20px;
-}
-
-.pg-sign {
-  margin-right: 20px;
-}
-
-.pg-correct,
-.pg-wrong {
-  margin-right: 20px;
-}
-
-.page-header span {
-  float: right;
-}
-
-.page-footer span {
-  float: right;
-}
-
-.answer {
-  margin-left: 4px;
-  color: #333;
-  font-size: large;
-  font-weight: bold;
-}
-
-td {
-  font-size: medium;
-  font-weight: bold;
 }
 
 .hidden {
@@ -227,8 +161,6 @@ export default {
       });
     },
     makeTest(num, col) {
-      logger.debug("makeTest =========", this.form);
-
       const $dom = $(this.$el);
       let pagebody = $dom.find("#buddha-page");
 
@@ -240,22 +172,21 @@ export default {
       data.info.name = this.form.name;
       data.col = 24 / col;
 
-      let level = this.form.level;
+      let level = Number(this.form.level);
       let list = [];
-      var row = [];
+      let row = [];
       for (let i = 0; i < num; i++) {
         //  随机生成1000以内加减法
         if (i % col == 0) {
           row = [];
         }
-        row.push((utils.randomSingleTest(1000, 1, Number(level))));
+        row.push((utils.randomSimpleTest(1000, 1, level)));
         if (i % col == col - 1) {
           list.push([].concat(row));
         }
       }
 
       data.list = list;
-      logger.debug('print data', data)
       this.content = data;
     },
     updateProfile() {
