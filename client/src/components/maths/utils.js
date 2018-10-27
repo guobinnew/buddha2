@@ -1,5 +1,5 @@
 const Opers = ['+', '-']
-const Opers2 = ['✖️', '➗']
+const Opers2 = ['×', '÷']
 const Week = ['日', '一', '二', '三', '四', '五', '六']
 
 // 生成随机数
