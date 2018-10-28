@@ -8,13 +8,16 @@
   },
   "database": {
     "sources": {
-      "current": 1,
-      "items": ["人教版", "北师大版"]
+      "current": 0,
+      "items": [
+        {"id": "rj", "name": "人教版"},
+        {"id": "bsd", "name": "北师大版"}
+      ]
     }
   },
   "pages":{
-    "maths": [3,4],
-    "chineses": [3],
+    "maths": [3, 4],
+    "chineses": [3, 4],
     "englishs": [],
     "programs": []
   }

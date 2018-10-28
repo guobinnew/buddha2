@@ -60,10 +60,10 @@
                             <el-menu-item index="3-3">三年级</el-menu-item>
                         </el-submenu>
                     </el-menu>
-                     <el-dropdown class="buddha-profile">
+                     <el-dropdown class="buddha-profile" @command="handleCommand">
                       <i class="fa fa-user-circle-o fa-lg" style="margin-right: 15px; color: white;"><span id="buddha-username" style="margin-left: 8px; font-size: 16px;"></span></i>
                       <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>个人信息</el-dropdown-item>
+                        <el-dropdown-item command="student">学生信息</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-header>
@@ -75,6 +75,26 @@
                 </el-footer>
             </el-container>
         </el-container>
+        <el-dialog title="学生信息" :visible.sync="dialogInfoVisible">
+          <el-form :model="profile" label-width="80px">
+            <el-form-item label="姓名">
+              <el-input v-model="profile.name" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="班号">
+              <el-input-number v-model="profile.class" :step="1" :min="1" :max="10"></el-input-number>
+            </el-form-item>
+            <el-form-item label="教材类型">
+               <el-radio-group v-model="profile.source">
+                <el-radio label="rj">人教</el-radio>
+                <el-radio label="bsd">北师大</el-radio>
+              </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogInfoVisible = false">取 消</el-button>
+         <el-button type="primary" @click="modifyProfile">修 改</el-button>
+        </div>
+      </el-dialog>
     </div>
 </template>
 
@@ -208,6 +228,11 @@ body > .el-container {
   padding-right: 20px;
   color: #666;
 }
+
+.el-form-item {
+  text-align: left;
+}
+
 </style>
 
 <script>
@@ -215,6 +240,8 @@ import ElContainer from "../node_modules/element-ui/packages/container/src/main"
 import logger from "./logger";
 import yuchg from "./base";
 import $ from "jquery";
+import fs from 'fs'
+import path from 'path'
 logger.setLevel("debug");
 
 export default {
@@ -226,7 +253,14 @@ export default {
       gradePhase: ["小学", "初中", "高中"],
       activeCourseIndex: "0",
       activeGradeIndex: "1-3",
-      isCollapse: false
+      isCollapse: false,
+      dialogInfoVisible: false,
+      profile: {
+        name: '',
+        class: 1,
+        source: 'rj'
+      },
+      manifest: {}
     };
   },
   methods: {
@@ -307,6 +341,40 @@ export default {
       }
       logger.debug("Router ==== ", course, grade, '->', page);
       return page;
+    },
+    handleCommand(command) {
+      if (command === 'student') {
+        this.profile.name = this.$store.state.user.name
+        this.profile.class = this.$store.state.user.class
+        this.profile.source = this.$store.getters.source
+        this.dialogInfoVisible = true
+      }
+    },
+    modifyProfile() {
+      if (this.profile.name === '') {
+        this.$message('姓名不能为空')
+        return
+      }
+
+      this.$store.commit('updateUser', this.profile)
+      this.$store.commit('updateSource', this.profile.source)
+      this.$message('学生信息修改成功')
+      this.dialogInfoVisible = false
+    },
+    saveToFile() {
+        const _path = path.join(__dirname, '../data/manifest.json')
+        // 写入
+        this.manifest.user.name = this.$store.stateuser.name
+        this.manifest.class = this.$store.stateuser.class
+        this.manifest.database.sources = this.$store.state.database.sources
+
+        fs.writeFile(_path, JSON.stringify(this.manifest),(err) => {
+            if (err) {
+                this.$message("Manifest保存失败")
+            } else {
+              logger.debug('Mainifest保存成功')
+            }
+        })
     }
   },
   created: function() {
@@ -317,6 +385,7 @@ export default {
     // 读取配置信息，初始化状态
     // 读取JSON文件
     $.getJSON("data/manifest.json", "", data => {
+      this.manifest = data
       this.$store.commit("updateManifest", data);
       this.showProfile();
       this.showFooter();

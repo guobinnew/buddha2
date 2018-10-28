@@ -31,6 +31,22 @@ export default new Vuex.Store({
     },
     appTitle(state) {
       return `${state.appName} V${state.version}`
+    },
+    source(state) {
+      const src = state.database.sources
+      let i = Number(src.current)
+      if (i < 0 || i > src.items.length) {
+        i = 0
+      }
+      return src.items[i].id
+    },
+    dbSource(state) {
+      const src = state.database.sources
+      let i = Number(src.current)
+      if (i < 0 || i > src.items.length) {
+        i = 0
+      }
+      return 'data/' + src.items[i].id
     }
   },
   mutations: {
@@ -56,6 +72,15 @@ export default new Vuex.Store({
     },
     updateGrade(state, grade) {
       state.user.gradeName = grade
+    },
+    updateSource(state, src) {
+      const sources = state.database.sources
+      sources.items.forEach(function(item, i) {
+        if (item.id === src) {
+          sources.current = i
+          return false
+        }
+      })
     }
   },
   actions: {

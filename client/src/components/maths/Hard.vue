@@ -208,7 +208,7 @@ export default {
       this.content = data;
     },
     updateProfile() {
-      this.form.grade = this.$store.state.user.grade;
+      this.form.grade = this.$store.getters.gradeFullName;
       this.form.name = this.$store.state.user.name;
     }
   },
