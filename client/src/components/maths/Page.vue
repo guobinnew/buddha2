@@ -97,7 +97,7 @@ export default {
   },
   computed: {
     contentHeight: function() {
-      return this.minLength ? Number(this.minLength) : 40 
+      return this.minLength ? Number(this.minLength) : 30 
     }
   },
   methods: {
