@@ -18,9 +18,4 @@
         console.log('info', '本地前台服务器启动，正在监听端口<' + port + '>...' )
     })
     
-    module.exports = {
-        server: server,
-        url: 'http://localhost:' + port + '/index.html'
-    }
-
 }());
