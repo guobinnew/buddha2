@@ -317,6 +317,8 @@ export default {
         return this.$store.state.pages["maths"].indexOf(grade) >= 0;
       } else if (course == 2) {
         return this.$store.state.pages["chineses"].indexOf(grade) >= 0;
+      } else if (course == 3) {
+        return this.$store.state.pages["englishs"].indexOf(grade) >= 0;
       } else if (course == 0) {
         return true
       }
@@ -335,6 +337,8 @@ export default {
           page.name = "mathsg" + no;
         } else if (course == 2) {
           page.name = "chsg" + no;
+        } else if (course == 3) {
+          page.name = "engsg" + no;
         } else if (course == 0) {
           page.name = "welcome";
         }

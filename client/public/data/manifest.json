@@ -18,7 +18,7 @@
   "pages":{
     "maths": [3, 4],
     "chineses": [3, 4],
-    "englishs": [],
+    "englishs": [3],
     "programs": []
   }
 }
