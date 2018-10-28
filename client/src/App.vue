@@ -37,7 +37,7 @@
                             background-color="#545c64"
                             text-color="#fff"
                             active-text-color="#ffd04b">
-                        <el-menu-item id="buddha-gradeclass" index="0" class="buddha-menu-title" disabled>小学一年级</el-menu-item>
+                        <el-menu-item id="buddha-gradeclass" index="0" class="buddha-menu-title" disabled>{{ profile.gradeName }}</el-menu-item>
                         <el-submenu index="1">
                             <template slot="title">小学</template>
                             <el-menu-item index="1-1">一年级</el-menu-item>
@@ -61,7 +61,7 @@
                         </el-submenu>
                     </el-menu>
                      <el-dropdown class="buddha-profile" @command="handleCommand">
-                      <i class="fa fa-user-circle-o fa-lg" style="margin-right: 15px; color: white;"><span id="buddha-username" style="margin-left: 8px; font-size: 16px;"></span></i>
+                      <i class="fa fa-user-circle-o fa-lg" style="margin-right: 15px; color: white;"><span id="buddha-username" style="margin-left: 8px; font-size: 16px;">{{ profile.name }}</span></i>
                       <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item command="student">学生信息</el-dropdown-item>
                     </el-dropdown-menu>
@@ -232,7 +232,6 @@ body > .el-container {
 .el-form-item {
   text-align: left;
 }
-
 </style>
 
 <script>
@@ -240,9 +239,10 @@ import ElContainer from "../node_modules/element-ui/packages/container/src/main"
 import logger from "./logger";
 import yuchg from "./base";
 import $ from "jquery";
-import fs from 'fs'
-import path from 'path'
+import fs from "fs";
+import path from "path";
 logger.setLevel("debug");
+const _datapath = path.join(__dirname, "../data");
 
 export default {
   components: { ElContainer },
@@ -256,9 +256,10 @@ export default {
       isCollapse: false,
       dialogInfoVisible: false,
       profile: {
-        name: '',
+        name: "",
         class: 1,
-        source: 'rj'
+        gradeName: "",
+        source: "rj"
       },
       manifest: {}
     };
@@ -273,27 +274,25 @@ export default {
     handleGradeSelect(key, keyPath) {
       this.showGradeName(key);
       // 根据课程和年级切换页面
-      this.activeGradeIndex = key
+      this.activeGradeIndex = key;
       this.$router.push(this.getPage(this.activeCourseIndex, key));
       logger.debug(key, keyPath);
     },
     showGradeName(grade) {
       // 显示年级
       let grades = grade.split("-");
-      let gradeName =
+      this.profile.gradeName =
         this.gradePhase[Number(grades[0]) - 1] +
         yuchg.number2String(Number(grades[1])) +
         "年级";
-      this.$store.commit('updateGrade', gradeName)  
-      $(this.$el)
-        .find("#buddha-gradeclass")
-        .html(gradeName);
+      this.$store.commit("updateGrade", this.profile.gradeName);
     },
-    showProfile() {
-      const $dom = $(this.$el);
-      $dom.find("#buddha-username").html(this.$store.state.user.name);
+    updateProfile() {
+      const state = this.$store.state;
+      this.profile.name = state.user.name;
+      this.profile.class = state.user.class;
     },
-    showFooter() {
+    updateFooter() {
       const state = this.$store.state;
       this.appTitle = this.$store.getters.appTitle;
       this.copyright = `@2018 ${state.company} 版权所有`;
@@ -312,7 +311,7 @@ export default {
       return no;
     },
     isValidPage(course, grade) {
-      logger.debug('isValidPage', course, grade)
+      logger.debug("isValidPage", course, grade);
       if (course == 1) {
         return this.$store.state.pages["maths"].indexOf(grade) >= 0;
       } else if (course == 2) {
@@ -320,12 +319,11 @@ export default {
       } else if (course == 3) {
         return this.$store.state.pages["englishs"].indexOf(grade) >= 0;
       } else if (course == 0) {
-        return true
+        return true;
       }
       return false;
     },
     getPage(course, grade) {
-      logger.debug("getPage:", course, grade);
       let page = {
         name: "empty"
       };
@@ -343,60 +341,58 @@ export default {
           page.name = "welcome";
         }
       }
-      logger.debug("Router ==== ", course, grade, '->', page);
       return page;
     },
     handleCommand(command) {
-      if (command === 'student') {
-        this.profile.name = this.$store.state.user.name
-        this.profile.class = this.$store.state.user.class
-        this.profile.source = this.$store.getters.source
-        this.dialogInfoVisible = true
+      if (command === "student") {
+        this.profile.name = this.$store.state.user.name;
+        this.profile.class = this.$store.state.user.class;
+        this.profile.source = this.$store.getters.source;
+        this.dialogInfoVisible = true;
       }
     },
     modifyProfile() {
-      if (this.profile.name === '') {
-        this.$message('姓名不能为空')
-        return
+      if (this.profile.name === "") {
+        this.$message("姓名不能为空");
+        return;
       }
 
-      this.$store.commit('updateUser', this.profile)
-      this.$store.commit('updateSource', this.profile.source)
-      this.$message('学生信息修改成功')
-      this.dialogInfoVisible = false
+      this.$store.commit("updateUser", this.profile);
+      this.$store.commit("updateSource", this.profile.source);
+      this.$message("学生信息修改成功");
+      this.dialogInfoVisible = false;
     },
     saveToFile() {
-        const _path = path.join(__dirname, '../data/manifest.json')
-        // 写入
-        this.manifest.user.name = this.$store.stateuser.name
-        this.manifest.class = this.$store.stateuser.class
-        this.manifest.database.sources = this.$store.state.database.sources
+      const _manifestpath = path.join(_datapath, "manifest.json");
+      // 写入
+      this.manifest.user.name = this.$store.stateuser.name;
+      this.manifest.class = this.$store.stateuser.class;
+      this.manifest.database.sources = this.$store.state.database.sources;
 
-        fs.writeFile(_path, JSON.stringify(this.manifest),(err) => {
-            if (err) {
-                this.$message("Manifest保存失败")
-            } else {
-              logger.debug('Mainifest保存成功')
-            }
-        })
+      fs.writeFile(_manifestpath, JSON.stringify(this.manifest), err => {
+        if (err) {
+          this.$message("Manifest保存失败");
+        } else {
+          logger.debug("Mainifest保存成功");
+        }
+      });
     }
   },
   created: function() {
-    this.showFooter();
+    this.updateFooter();
   },
   mounted: function() {
     this.showGradeName(this.activeGradeIndex);
     // 读取配置信息，初始化状态
-    // 读取JSON文件
     $.getJSON("data/manifest.json", "", data => {
-      this.manifest = data
+      this.manifest = data;
       this.$store.commit("updateManifest", data);
-      this.showProfile();
-      this.showFooter();
+      this.updateProfile();
+      this.updateFooter();
     });
-  
-    this.$router.push(this.getPage(this.activeCourseIndex, this.activeGradeIndex));
-
+    this.$router.push(
+      this.getPage(this.activeCourseIndex, this.activeGradeIndex)
+    );
   }
 };
 </script>

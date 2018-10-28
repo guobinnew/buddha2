@@ -16,7 +16,10 @@ export default new Vuex.Store({
       gradeName: ''
     },
     database: {
-      sources: {}
+      sources: {
+         current: -1,
+         items: []
+      }
     },
     pages: {
       maths: [],
