@@ -28,6 +28,9 @@ export default new Vuex.Store({
   getters: {
     gradeFullName(state) {
       return state.user.gradeName + yuchg.number2String(state.user.class) + '班'
+    },
+    appTitle(state) {
+      return `${state.appName} V${state.version}`
     }
   },
   mutations: {

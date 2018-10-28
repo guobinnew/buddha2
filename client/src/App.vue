@@ -261,9 +261,7 @@ export default {
     },
     showFooter() {
       const state = this.$store.state;
-      this.appTitle = `${state.appName} V${state.version} (${
-        state.subVersion
-      })`;
+      this.appTitle = this.$store.getters.appTitle;
       this.copyright = `@2018 ${state.company} 版权所有`;
     },
     getGradeNo(grade) {
@@ -323,7 +321,7 @@ export default {
       this.showProfile();
       this.showFooter();
     });
-
+  
     this.$router.push(this.getPage(this.activeCourseIndex, this.activeGradeIndex));
 
   }

@@ -11,8 +11,8 @@
 <style scoped>
 .container {
   overflow: hidden;
-  height: 100%;
-  margin-top: 50px;
+  height: 80%;
+  padding-top: 50px;
 }
 
 .el-carousel__item h3 {
@@ -37,10 +37,10 @@ export default {
   data: function() {
     return {
       photos: [
-        "img/chinese.png",
-        "img/flow.png",
-        "img/keras.png",
-        "img/command.png"
+        "img/splash1.png",
+        "img/splash2.jpg",
+        "img/splash3.png",
+        "img/splash4.png"
       ]
     };
   },
