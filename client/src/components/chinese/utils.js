@@ -2,10 +2,12 @@
 
 const utils = {
   readWord: function(word) {
-    // 在线语音合成
-    responsiveVoice.speak(word, "Chinese Female", {
-      rate: 0.8
-    })
+    if ('speechSynthesis' in window) {
+      let words = new SpeechSynthesisUtterance(word)
+      window.speechSynthesis.speak(words)
+    } else {
+      throw new Error('speechSynthesis is not supported')
+    }
   }
 }
 

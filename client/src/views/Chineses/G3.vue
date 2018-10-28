@@ -84,6 +84,7 @@ export default {
   components: { Word },
   data: function() {
     return {
+      activeName: '1',
       form: {
         grade: "",
         name: "",

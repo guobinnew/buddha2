@@ -18,7 +18,10 @@
   </style>
   <body>
     <div id="app"></div>
-    <script type="text/javascript" src="js/responsivevoice.js"></script>
+    <script type="text/javascript">
+     var words = new SpeechSynthesisUtterance('高兴');
+     window.speechSynthesis.speak(words);
+    </script>
     <!-- built files will be auto injected -->
   </body>
 </html>
