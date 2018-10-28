@@ -24,7 +24,7 @@
               </el-col>
               <el-col class="line" :span="2">数目</el-col>
               <el-col :span="11">
-                <el-input-number v-model="form.number" :step="10" :min="10" :max="100"></el-input-number>
+                <el-input-number v-model="form.number" :step="10" :min="10" :max="80"></el-input-number>
               </el-col>
             </el-form-item>
             <el-form-item label="列数">
@@ -131,6 +131,10 @@ export default {
     onClickSave() {
       const $dom = $(this.$el);
       let page = $dom.find("#buddha-page")[0];
+      let date = this.form.date
+      if (!date || date == "") {
+        date = utils.currentTimeString();
+      }
 
       html2canvas(page, {}).then(function(canvas) {
         var context = canvas.getContext("2d");
@@ -153,10 +157,6 @@ export default {
           (535.28 / canvas.width) * canvas.height
         );
         var ans = $("span.answer").hasClass("hidden");
-        var date = $("input[name='date']").val();
-        if (!date || date == "") {
-          date = utils.currentTimeString();
-        }
         pdf.save(date + (ans ? "" : "_ans") + ".pdf");
       });
     },
@@ -173,6 +173,7 @@ export default {
       data.col = 24 / col;
 
       let level = Number(this.form.level);
+      logger.debug('makeTest', this.form)
       let list = [];
       let row = [];
       for (let i = 0; i < num; i++) {
@@ -180,7 +181,7 @@ export default {
         if (i % col == 0) {
           row = [];
         }
-        row.push((utils.randomSimpleTest(1000, 1, level)));
+        row.push((utils.randomSimpleTest(level)));
         if (i % col == col - 1) {
           list.push([].concat(row));
         }

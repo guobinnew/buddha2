@@ -9,26 +9,30 @@ function randomNumber(max, min = 0) {
 
 const utils = {
   // 随机生一个加减计算，结果在指定范围内
-  randomSimpleTest: function(max, min = 0, level = 1) {
+  randomSimpleTest: function(level) {
     let a = 0
     let b = 0
     let res = 0
     let op = Opers[randomNumber(Opers.length - 1)]
     let eq = '='
+    let max = 1
+    let min = 1
 
     do {
       if (level === 1) {
+        max = 100
         // 随机取1个数字
-        a = randomNumber(max - 1, 1)
+        a = randomNumber(max - 1, 20)
         // 随机取第2个数字
         if (op === '+') {
-          b = randomNumber(max - a - 1, 1)
+          b = randomNumber(max - a - 1, 10)
           res = a + b
         } else {
-          b = randomNumber(a - 1, 1)
+          b = randomNumber(a - 1, 10)
           res = a - b
         }
       } else if (level === 2) {
+        max = 1000
         // 随机取1个数字
         a = randomNumber(max - 21, 10)
         // 随机取第2个数字
@@ -40,6 +44,7 @@ const utils = {
           res = a - b
         }
       } else {
+        max = 1000
         // 随机取1个数字
         a = randomNumber(max - 201, 100)
         // 随机取第2个数字
