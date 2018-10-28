@@ -7,11 +7,11 @@
       <el-button type="danger" icon="fa fa-buysellads" @click="onClickAnswer" :disabled="buttons.answer">查看答案</el-button>
     </el-button-group>
     <el-row :gutter="20">
-      <el-col :span="8">
+      <el-col :span="6">
         <el-progress type="circle" :percentage="percent"></el-progress>
         <p class="buddha-index">{{ ratio }}</p>
       </el-col>
-      <el-col :span="16">
+      <el-col :span="18">
          <p class="buddha-word" v-show="showAnswer">{{ currentWord }} <span class="buddha-chinese"> {{ currentChinese }}</span></p>
       </el-col>
     </el-row>

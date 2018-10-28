@@ -1,5 +1,5 @@
 <template>
-      <el-tabs type="border-card">
+      <el-tabs type="border-card" @tab-click="onTabClick">
         <el-tab-pane label="每日口算">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
@@ -50,8 +50,9 @@
           <Page v-if="content" :content="content"></Page>
         </div>
         </el-tab-pane>
-        <el-tab-pane label="成绩统计">
-         成绩统计
+        <el-tab-pane label="成绩统计" name="score">
+          <div id="buddha-chart" v-resize="onChartResize"></div>
+          <div id="buddha-chart-time"></div>
         </el-tab-pane>
       </el-tabs>
 </template>
@@ -93,6 +94,16 @@
 .hidden {
   display: none;
 }
+
+#buddha-chart {
+  width: 100%;
+  height: 600px;
+}
+
+#buddha-chart-time {
+  width: 100%;
+  height: 600px;
+}
 </style>
 
 <script>
@@ -101,10 +112,15 @@ import logger from "../../logger";
 import utils from "./utils";
 import $ from "jquery";
 import yuchg from "../../base";
-import html2canvas from 'html2canvas'
-import * as jsPDF from 'jspdf'
+import html2canvas from "html2canvas";
+import * as jsPDF from "jspdf";
+import echarts from "echarts";
+import resize from 'vue-resize-directive'
 
 export default {
+  directives: {
+        resize,
+  },
   components: { Page },
   data: function() {
     return {
@@ -117,10 +133,91 @@ export default {
         level: "2",
         column: "4"
       },
-      content: null
+      content: null,
+      chart: null
     };
   },
+  computed: {
+    chartOpt: function() {
+      let option = {
+        title: {
+          text: "未来一周气温变化",
+          subtext: "纯属虚构"
+        },
+        tooltip: {
+          trigger: "axis"
+        },
+        legend: {
+          data: ["最高气温", "最低气温"]
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ["line", "bar"] },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            boundaryGap: false,
+            data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+          }
+        ],
+        yAxis: [
+          {
+            type: "value",
+            axisLabel: {
+              formatter: "{value} °C"
+            }
+          }
+        ],
+        series: [
+          {
+            name: "最高气温",
+            type: "line",
+            data: [11, 11, 15, 13, 12, 13, 10],
+            markPoint: {
+              data: [
+                { type: "max", name: "最大值" },
+                { type: "min", name: "最小值" }
+              ]
+            },
+            markLine: {
+              data: [{ type: "average", name: "平均值" }]
+            }
+          },
+          {
+            name: "最低气温",
+            type: "line",
+            data: [1, -2, 2, 5, 3, 2, 0],
+            markPoint: {
+              data: [{ name: "周最低", value: -2, xAxis: 1, yAxis: -1.5 }]
+            },
+            markLine: {
+              data: [{ type: "average", name: "平均值" }]
+            }
+          }
+        ]
+      };
+      return option;
+    }
+  },
   methods: {
+    onChartResize() {
+      this.chart && this.chart.resize()
+    },
+    onTabClick(tab) {
+      if (tab.name === 'score') {
+       if (!this.chart) {
+         this.drawChart()
+       }
+      }
+    },
     onClickTest() {
       this.makeTest(Number(this.form.number), Number(this.form.column));
     },
@@ -131,7 +228,7 @@ export default {
     onClickSave() {
       const $dom = $(this.$el);
       let page = $dom.find("#buddha-page")[0];
-      let date = this.form.date
+      let date = this.form.date;
       if (!date || date == "") {
         date = utils.currentTimeString();
       }
@@ -173,7 +270,7 @@ export default {
       data.col = 24 / col;
 
       let level = Number(this.form.level);
-      logger.debug('makeTest', this.form)
+      logger.debug("makeTest", this.form);
       let list = [];
       let row = [];
       for (let i = 0; i < num; i++) {
@@ -181,7 +278,7 @@ export default {
         if (i % col == 0) {
           row = [];
         }
-        row.push((utils.randomSimpleTest(level)));
+        row.push(utils.randomSimpleTest(level));
         if (i % col == col - 1) {
           list.push([].concat(row));
         }
@@ -193,16 +290,24 @@ export default {
     updateProfile() {
       this.form.grade = this.$store.getters.gradeFullName;
       this.form.name = this.$store.state.user.name;
+    },
+    drawChart() {
+      let $dom = $(this.$el);
+      this.chart = echarts.init($dom.find("#buddha-chart")[0]);
+      this.chart.setOption(this.chartOpt);
+      this.chart.resize();
     }
   },
   mounted: function() {
     this.form.date = utils.currentTimeString();
     this.updateProfile();
-    logger.debug('Profile', this.$store.state)
+    logger.debug("Profile", this.$store.state);
+
+    this.$next
   },
   activated: function() {
     this.updateProfile();
   }
-};
+}
 </script>
 
