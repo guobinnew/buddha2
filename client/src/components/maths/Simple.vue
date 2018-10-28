@@ -190,13 +190,14 @@ export default {
       this.content = data;
     },
     updateProfile() {
-      this.form.grade = this.$store.state.user.grade;
+      this.form.grade = this.$store.getters.gradeFullName;
       this.form.name = this.$store.state.user.name;
     }
   },
   mounted: function() {
     this.form.date = utils.currentTimeString();
     this.updateProfile();
+    logger.debug('Profile', this.$store.state)
   },
   activated: function() {
     this.updateProfile();

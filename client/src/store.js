@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import yuchg from './base'
 
 Vue.use(Vuex)
 
@@ -12,21 +13,25 @@ export default new Vuex.Store({
     user: {
       name: '',
       class: 1,
-      grade: ''
+      gradeName: ''
+    },
+    database: {
+      sources: {}
     },
     pages: {
       maths: [],
-      chinese: [],
-      english: [],
-      program: []
+      chineses: [],
+      englishs: [],
+      programs: []
     }
   },
   getters: {
-    
+    gradeFullName(state) {
+      return state.user.gradeName + yuchg.number2String(state.user.class) + '班'
+    }
   },
   mutations: {
     updateManifest(state, info) {
-
       state.appName = info.appName
       state.version = info.version
       state.subVersion = info.subVersion
@@ -35,17 +40,19 @@ export default new Vuex.Store({
       state.user.name = info.user.name
       state.user.class = info.user.class
 
+      state.database.sources = Object.assign({}, info.database.sources)
+
       state.pages.maths = info.pages.maths
-      state.pages.chinese = info.pages.chinese
-      state.pages.english = info.pages.english
-      state.pages.program = info.pages.program
+      state.pages.chineses = info.pages.chineses
+      state.pages.englishs = info.pages.englishs
+      state.pages.programs = info.pages.programs
     },
     updateUser(state, user) {
       state.user.name = user.name
       state.user.class = user.class
     },
     updateGrade(state, grade) {
-      state.user.grade = grade
+      state.user.gradeName = grade
     }
   },
   actions: {

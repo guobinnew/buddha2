@@ -239,6 +239,7 @@ export default {
     handleGradeSelect(key, keyPath) {
       this.showGradeName(key);
       // 根据课程和年级切换页面
+      this.activeGradeIndex = key
       this.$router.push(this.getPage(this.activeCourseIndex, key));
       logger.debug(key, keyPath);
     },
@@ -249,8 +250,7 @@ export default {
         this.gradePhase[Number(grades[0]) - 1] +
         yuchg.number2String(Number(grades[1])) +
         "年级";
-      let gradeFullName = gradeName + yuchg.number2String(this.$store.state.user.class) + '班'
-      this.$store.commit('updateGrade', gradeFullName)  
+      this.$store.commit('updateGrade', gradeName)  
       $(this.$el)
         .find("#buddha-gradeclass")
         .html(gradeName);
@@ -280,8 +280,11 @@ export default {
       return no;
     },
     isValidPage(course, grade) {
+      logger.debug('isValidPage', course, grade)
       if (course == 1) {
         return this.$store.state.pages["maths"].indexOf(grade) >= 0;
+      } else if (course == 2) {
+        return this.$store.state.pages["chineses"].indexOf(grade) >= 0;
       } else if (course == 0) {
         return true
       }
@@ -297,9 +300,9 @@ export default {
         if (course == 4) {
           page.name = "editor";
         } else if (course == 1) {
-          if (no > 0 && this.isValidPage(course, no)) {
-            page.name = "mathsg" + no;
-          }
+          page.name = "mathsg" + no;
+        } else if (course == 2) {
+          page.name = "chsg" + no;
         } else if (course == 0) {
           page.name = "welcome";
         }

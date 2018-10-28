@@ -1,16 +1,21 @@
 {
   "appName": "懒家长",
   "version": "0.1.0",
-  "subVersion": "人教版",
   "company": "Unique",
   "user": {
     "name": "郭玥灵",
     "class": 4
   },
+  "database": {
+    "sources": {
+      "current": 1,
+      "items": ["人教版", "北师大版"]
+    }
+  },
   "pages":{
     "maths": [3,4],
-    "chinese": [],
-    "english": [],
-    "program": []
+    "chineses": [3],
+    "englishs": [],
+    "programs": []
   }
 }
