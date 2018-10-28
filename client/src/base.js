@@ -245,9 +245,13 @@ yuchg.number2String = function(n) {
   if (n < 10) {
     return NumString[n]
   }
-
   // 
   return ''
-
 }
+
+// 随机排序
+yuchg.randomSort = function(a, b) {
+  return Math.random() > 0.5 ? -1 : 1
+}
+
 export default yuchg

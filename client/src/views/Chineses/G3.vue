@@ -17,24 +17,30 @@
             </el-form-item>
             <el-form-item label="上册">
               <el-checkbox-group v-model="form.select.first">
-                <el-checkbox v-for="index of form.words.first.length" :label="index" border size="medium">第{{ index }}课</el-checkbox>
+                <template v-for="(item, index) in words.first">
+                  <el-checkbox v-if="item.length > 0" :label="index" border size="medium">第{{ index + 1 }}课</el-checkbox>
+                </template>
               </el-checkbox-group>
             </el-form-item>
             <el-form-item label="下册">
               <el-checkbox-group v-model="form.select.second">
-                <el-checkbox v-for="index of form.words.second.length" :label="index" border size="medium">第{{ index }}课</el-checkbox>
+                <template v-for="(item, index) in words.second">
+                  <el-checkbox v-if="item.length > 0" :label="index" border size="medium">第{{ index + 1 }}课</el-checkbox>
+                </template>
               </el-checkbox-group>
             </el-form-item>
             <el-form-item label="扩展">
               <el-checkbox-group v-model="form.select.extend">
-                <el-checkbox v-for="index of form.words.second.length" :label="index" border size="medium">第{{ index }}课</el-checkbox>
+                <template v-for="(item, index) in words.extend">
+                  <el-checkbox v-if="item.length > 0" :label="index" border size="medium">第{{ index + 1 }}课</el-checkbox>
+                </template>
               </el-checkbox-group>
             </el-form-item>
            </el-form>
           </el-collapse-item>
         </el-collapse>
         <div id="buddha-page" class="buddha-page">
-          <Word :content="content"></Word>
+          <Word ref="word"></Word>
         </div>
         </el-tab-pane>
         <el-tab-pane label="记录统计">
@@ -77,38 +83,68 @@
 </style>
 
 <script>
-import Word from '../../components/chinese/Word.vue'
-import $ from 'jquery'
+import Word from "../../components/chinese/Word.vue";
+import $ from "jquery";
+import yuchg from '../../base'
+import logger from '../../logger'
+
 
 export default {
   components: { Word },
   data: function() {
     return {
-      activeName: '1',
+      activeName: "1",
       form: {
         grade: "",
         name: "",
         mode: "2",
         select: {
-          first:[],
-          second:[],
-          extend:[]
-        },
-        words: {
-          first:[],
-          second:[],
-          extend:[]
+          first: [],
+          second: [],
+          extend: []
         }
       },
-      content: []
-    }
+      words: {
+        first: [],
+        second: [],
+        extend: []
+      }
+    };
   },
   methods: {
     onClickStart() {
-      
+      // 整理单词清单
+      const select = this.form.select
+      let selwords = []
+      if (select.first.length > 0 || select.second.length > 0 || select.second.extend > 0) {
+        for (let i of select.first) {
+          selwords = selwords.concat(this.words.first[i])
+        }
+        for (let i of select.second) {
+          selwords = selwords.concat(this.words.second[i])
+        }
+        for (let i of select.extend) {
+          selwords = selwords.concat(this.words.extend[i])
+        }
+        
+      } else {
+        this.$message("请选择要听写的课文");
+        return;
+      }
+
+      if (selwords.length <= 0) {
+        this.$message("选择要听写的课文没有词语表，请检查单词数据表是否正确");
+        return;
+      }
+
+      // 随机打乱
+      if (this.form.mode == 2) {
+        selwords.sort(yuchg.randomSort);
+      }
+      this.$refs.word.restart(selwords)
     },
     onClickReset() {
-      const $dom = $(this.$el);
+      this.$refs.word.restart();
     },
     updateProfile() {
       this.form.grade = this.$store.getters.gradeFullName;
@@ -118,9 +154,9 @@ export default {
   created: function() {
     // 读取单词表
     $.getJSON("data/g3/words.json", "", data => {
-      this.form.words.first = data.first
-      this.form.words.second = data.second
-      this.form.words.extend = data.extend
+      this.words.first = data.first;
+      this.words.second = data.second;
+      this.words.extend = data.extend;
     });
   },
   mounted: function() {
@@ -129,5 +165,5 @@ export default {
   activated: function() {
     this.updateProfile();
   }
-}
+};
 </script>
