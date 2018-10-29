@@ -254,4 +254,17 @@ yuchg.randomSort = function(a, b) {
   return Math.random() > 0.5 ? -1 : 1
 }
 
+// 随机ID
+yuchg.randomString = function(len) {  
+  　　len = len || 32;  
+  　　var $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';  
+  　　var maxPos = $chars.length;  
+  　　var pwd = '';  
+  　　for (var i = 0; i < len; i++) {  
+          //0~32的整数  
+  　　　　pwd += $chars.charAt(Math.floor(Math.random() * (maxPos+1)));  
+  　　}  
+  　　return pwd;  
+} 
+
 export default yuchg

@@ -141,6 +141,7 @@ import $ from "jquery";
 import yuchg from "../../base";
 import utils from "./utils";
 import CryptoJS from "crypto-js";
+import saveAs from 'file-saver';
 
 export default {
   props: ["url", "update"],
@@ -214,7 +215,22 @@ export default {
       this.setModifyFlag(index);
     },
     onClickRefresh() {
-      this.dialogAddVisible = true;
+        if (this.currentModified.length > 0) {
+        // 有修改
+        this.$confirm("确认重新加载单词表，放弃当前的修改?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+        .then(() => {
+           this.fetchWords()
+        })
+        .catch(() => {
+          
+        });
+      } else {
+         this.fetchWords()
+      }
     },
     onClickSave() {
       // 保存当前修改
@@ -243,7 +259,11 @@ export default {
         }
       });
     },
-    onClickDownload() {},
+    onClickDownload() {
+      let str = JSON.stringify(this.words)
+      var file = new File([str], "word" + yuchg.randomString(8) + ".json", {type: "text/plain;charset=utf-8"});
+      saveAs(file);
+    },
     onAddWords() {
       let words = yuchg.trimString(this.addForm.words);
       if (words.length === 0) {
@@ -253,7 +273,9 @@ export default {
 
       if (this.addForm.index >= 1) {
         const src = this.currentData[this.addForm.index - 1];
-        const newWords = this.addForm.words.split(/\s+/);
+        const newWords = this.addForm.words.split(/\s+/).filter(function(value){
+          return value.length > 0
+        });
         src.data.push.apply(src.data, newWords);
         this.setModifyFlag(this.addForm.index);
         this.$message("词语添加成功");
