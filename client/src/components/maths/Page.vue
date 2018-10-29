@@ -88,7 +88,6 @@ import $ from "jquery";
 import yuchg from "../../base";
 
 export default {
-  name: "Page",
   props: ["content", "minLength"],
   data: function() {
     return {

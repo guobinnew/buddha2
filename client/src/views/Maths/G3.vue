@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-      <Simple></Simple>
+      <SimpleOral source="g3"></SimpleOral>
     </div>
 </template>
 
@@ -40,25 +40,20 @@
 </style>
 
 <script>
-import Simple from '../../components/maths/Simple.vue'
+import SimpleOral from '../../components/maths/SimpleOral.vue'
 import logger from '../../logger'
 
 export default {
+  components: { SimpleOral },
   data: function() {
     return {
-      grade: 0
     }
   },
   computed: {
   },
-  components: {
-    Simple
-  },
   created: function () {
-   
   },
   mounted: function() {
-    
   }
 }
 </script>

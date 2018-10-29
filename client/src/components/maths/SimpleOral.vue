@@ -24,14 +24,8 @@
               </el-col>
               <el-col class="line" :span="2">数目</el-col>
               <el-col :span="11">
-                <el-input-number v-model="form.number" :step="10" :min="10" :max="100"></el-input-number>
+                <el-input-number v-model="form.number" :step="10" :min="10" :max="80"></el-input-number>
               </el-col>
-            </el-form-item>
-            <el-form-item label="类型">
-              <el-checkbox-group v-model="form.style">
-                <el-checkbox label="1">乘法</el-checkbox>
-                <el-checkbox label="2">除法</el-checkbox>
-              </el-checkbox-group>
             </el-form-item>
             <el-form-item label="列数">
               <el-radio-group v-model="form.column">
@@ -53,11 +47,11 @@
           </el-collapse-item>
         </el-collapse>
         <div id="buddha-page" class="buddha-page">
-          <Page v-if="content" :content="content" :minLength="120"></Page>
+          <Page v-if="content" :content="content"></Page>
         </div>
         </el-tab-pane>
-        <el-tab-pane label="成绩统计">
-         成绩统计
+        <el-tab-pane label="成绩统计" name="score">
+          <Chart :source="source" ref="chart"></Chart>
         </el-tab-pane>
       </el-tabs>
 </template>
@@ -103,6 +97,7 @@
 
 <script>
 import Page from "./Page.vue";
+import Chart from './Chart.vue'
 import logger from "../../logger";
 import utils from "./utils";
 import $ from "jquery";
@@ -111,7 +106,8 @@ import html2canvas from "html2canvas";
 import * as jsPDF from "jspdf";
 
 export default {
-  components: { Page },
+  props: ["source"],
+  components: { Page, Chart },
   data: function() {
     return {
       activeName: "1",
@@ -119,10 +115,9 @@ export default {
         grade: "",
         name: "",
         date: "",
-        number: 20,
+        number: 40,
         level: "2",
-        column: "4",
-        style: ["1"]
+        column: "4"
       },
       content: null
     };
@@ -138,6 +133,10 @@ export default {
     onClickSave() {
       const $dom = $(this.$el);
       let page = $dom.find("#buddha-page")[0];
+      let date = this.form.date;
+      if (!date || date == "") {
+        date = utils.currentTimeString();
+      }
 
       html2canvas(page, {}).then(function(canvas) {
         var context = canvas.getContext("2d");
@@ -160,10 +159,6 @@ export default {
           (535.28 / canvas.width) * canvas.height
         );
         var ans = $("span.answer").hasClass("hidden");
-        var date = $("input[name='date']").val();
-        if (!date || date == "") {
-          date = utils.currentTimeString();
-        }
         pdf.save(date + (ans ? "" : "_ans") + ".pdf");
       });
     },
@@ -180,25 +175,14 @@ export default {
       data.col = 24 / col;
 
       let level = Number(this.form.level);
-      let styles = [];
-      for (let v of this.form.style) {
-        styles.push(Number(v));
-      }
+      logger.debug("makeTest", this.form);
       let list = [];
-
-      // 平均分配
-      let ops = []
-      const l = styles.length;
-      for (var i = 0; i < num; i++) {
-        ops.push(styles[i % l]);
-      }
-
       let row = [];
-      for (var i = 0; i < num; i++) {
+      for (let i = 0; i < num; i++) {
         if (i % col == 0) {
           row = [];
         }
-        row.push(utils.randomHardTest(ops[i], level));
+        row.push(utils.randomSimpleTest(level));
         if (i % col == col - 1) {
           list.push([].concat(row));
         }
@@ -215,9 +199,11 @@ export default {
   mounted: function() {
     this.form.date = utils.currentTimeString();
     this.updateProfile();
+    logger.debug("Profile", this.$store.state);
   },
   activated: function() {
     this.updateProfile();
   }
-};
+}
 </script>
+

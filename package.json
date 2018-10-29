@@ -32,6 +32,7 @@
     "serve-favicon": "^2.5.0",
     "superagent": "^3.8.3",
     "uuid": "^3.3.2",
+    "vue-electron": "^1.0.6",
     "winston": "^2.4.4"
   },
   "devDependencies": {

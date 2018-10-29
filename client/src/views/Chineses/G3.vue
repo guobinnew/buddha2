@@ -43,6 +43,9 @@
           <Word ref="word"></Word>
         </div>
         </el-tab-pane>
+        <el-tab-pane label="词汇管理">
+          <WordLibrary source="g3"></WordLibrary>
+        </el-tab-pane>
         <el-tab-pane label="记录统计">
          记录统计
         </el-tab-pane>
@@ -84,13 +87,14 @@
 
 <script>
 import Word from "../../components/chinese/Word.vue";
+import WordLibrary from "../../components/chinese/WordLibrary.vue";
 import $ from "jquery";
 import yuchg from '../../base'
 import logger from '../../logger'
 
 
 export default {
-  components: { Word },
+  components: { Word, WordLibrary },
   data: function() {
     return {
       activeName: "1",
@@ -108,7 +112,8 @@ export default {
         first: [],
         second: [],
         extend: []
-      }
+      },
+      dbsource: ''
     };
   },
   methods: {
@@ -153,7 +158,9 @@ export default {
   },
   created: function() {
     // 读取单词表
-    $.getJSON("data/g3/words.json", "", data => {
+    const dbsrc = this.$store.getters.dbSource
+    this.dbsource = dbsrc + "/g3/words.json"
+    $.getJSON(this.dbsource, "", data => {
       this.words.first = data.first;
       this.words.second = data.second;
       this.words.extend = data.extend;

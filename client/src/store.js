@@ -43,13 +43,23 @@ export default new Vuex.Store({
       }
       return src.items[i].id
     },
+    sourceItems(state) {
+      const src = state.database.sources
+      if (!src.items) {
+        return []
+      }
+      return src.items
+    },
     dbSource(state) {
       const src = state.database.sources
       let i = Number(src.current)
       if (i < 0 || i > src.items.length) {
         i = 0
       }
-      return 'data/' + src.items[i].id
+      return 'data/db/' + src.items[i].id
+    },
+    scoreSource(state) {
+      return 'data/score'
     }
   },
   mutations: {

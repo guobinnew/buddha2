@@ -76,17 +76,18 @@
             </el-container>
         </el-container>
         <el-dialog title="学生信息" :visible.sync="dialogInfoVisible">
-          <el-form :model="profile" label-width="80px">
+          <el-form :model="form" label-width="80px">
             <el-form-item label="姓名">
-              <el-input v-model="profile.name" autocomplete="off"></el-input>
+              <el-input v-model="form.name" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="班号">
-              <el-input-number v-model="profile.class" :step="1" :min="1" :max="10"></el-input-number>
+              <el-input-number v-model="form.class" :step="1" :min="1" :max="10"></el-input-number>
             </el-form-item>
             <el-form-item label="教材类型">
-               <el-radio-group v-model="profile.source">
-                <el-radio label="rj">人教</el-radio>
-                <el-radio label="bsd">北师大</el-radio>
+               <el-radio-group v-model="form.source">
+                <template v-for="item in sourceItems">
+                    <el-radio :label="item.id">{{ item.name }}</el-radio>
+                  </template>
               </el-radio-group>
           </el-form-item>
         </el-form>
@@ -239,10 +240,7 @@ import ElContainer from "../node_modules/element-ui/packages/container/src/main"
 import logger from "./logger";
 import yuchg from "./base";
 import $ from "jquery";
-import fs from "fs";
-import path from "path";
 logger.setLevel("debug");
-const _datapath = path.join(__dirname, "../data");
 
 export default {
   components: { ElContainer },
@@ -261,8 +259,17 @@ export default {
         gradeName: "",
         source: "rj"
       },
-      manifest: {}
+      form: {
+        name: "",
+        class: 1,
+        source: "rj"
+      }
     };
+  },
+  computed: {
+    sourceItems: function() {
+      return this.$store.getters.sourceItems
+    }
   },
   methods: {
     handleCourseSelect(key, keyPath) {
@@ -291,6 +298,7 @@ export default {
       const state = this.$store.state;
       this.profile.name = state.user.name;
       this.profile.class = state.user.class;
+      this.profile.source = this.$store.getters.source;
     },
     updateFooter() {
       const state = this.$store.state;
@@ -345,37 +353,55 @@ export default {
     },
     handleCommand(command) {
       if (command === "student") {
-        this.profile.name = this.$store.state.user.name;
-        this.profile.class = this.$store.state.user.class;
-        this.profile.source = this.$store.getters.source;
+        this.form.name = this.profile.name;
+        this.form.class = this.profile.class;
+        this.form.source = this.profile.source;
         this.dialogInfoVisible = true;
       }
     },
     modifyProfile() {
-      if (this.profile.name === "") {
+      if (this.form.name === "") {
         this.$message("姓名不能为空");
         return;
       }
+      
+      
+      const vm = this
+      logger.warn(vm.form)
 
-      this.$store.commit("updateUser", this.profile);
-      this.$store.commit("updateSource", this.profile.source);
-      this.$message("学生信息修改成功");
-      this.dialogInfoVisible = false;
-    },
-    saveToFile() {
-      const _manifestpath = path.join(_datapath, "manifest.json");
-      // 写入
-      this.manifest.user.name = this.$store.stateuser.name;
-      this.manifest.class = this.$store.stateuser.class;
-      this.manifest.database.sources = this.$store.state.database.sources;
-
-      fs.writeFile(_manifestpath, JSON.stringify(this.manifest), err => {
-        if (err) {
-          this.$message("Manifest保存失败");
-        } else {
-          logger.debug("Mainifest保存成功");
+      $.ajax({
+        url: "http://localhost:3000/api/updateProfile",
+        type: "POST",
+        data: vm.form,
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          if (data.result == 0) { // 成功
+            vm.$store.commit("updateUser", vm.form);
+            vm.$store.commit("updateSource", vm.form.source);
+            vm.updateProfile()
+            vm.profile.source = vm.$store.getters.source;
+            vm.dialogInfoVisible = false;
+            vm.$message("学生信息修改成功");
+          } else {
+            vm.$message("学生信息修改失败: " + data.err);
+          }
         }
       });
+    },
+    saveToFile() {
+      // const _manifestpath = path.join(_datapath, "manifest.json");
+      // // 写入
+      // this.manifest.user.name = this.$store.state.user.name;
+      // this.manifest.class = this.$store.state.user.class;
+      // this.manifest.database.sources.current = this.$store.state.database.sources.current;
+
+      // fs.writeFile(_manifestpath, JSON.stringify(this.manifest), err => {
+      //   if (err) {
+      //     this.$message("Manifest保存失败");
+      //   } else {
+      //     logger.debug("Mainifest保存成功");
+      //   }
+      // });
     }
   },
   created: function() {
@@ -384,11 +410,16 @@ export default {
   mounted: function() {
     this.showGradeName(this.activeGradeIndex);
     // 读取配置信息，初始化状态
-    $.getJSON("data/manifest.json", "", data => {
-      this.manifest = data;
-      this.$store.commit("updateManifest", data);
-      this.updateProfile();
-      this.updateFooter();
+    let vm = this
+    $.ajax({
+        url: "http://localhost:3000/api/manifest",
+        type: "GET",
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          vm.$store.commit("updateManifest", data);
+          vm.updateProfile();
+          vm.updateFooter();
+        }
     });
     this.$router.push(
       this.getPage(this.activeCourseIndex, this.activeGradeIndex)

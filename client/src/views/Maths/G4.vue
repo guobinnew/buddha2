@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-      <Hard></Hard>
+      <HardOral source="g4"></HardOral>
     </div>
 </template>
 
@@ -40,19 +40,16 @@
 </style>
 
 <script>
-import Hard from '../../components/maths/Hard.vue'
+import HardOral from '../../components/maths/HardOral.vue'
 import logger from '../../logger'
 
 export default {
+  components: { HardOral },
   data: function() {
     return {
-      grade: 0
     }
   },
   computed: {
-  },
-  components: {
-    Hard
   },
   created: function () {
   },
