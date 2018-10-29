@@ -37,6 +37,10 @@ export default new Vuex.Store({
     },
     source(state) {
       const src = state.database.sources
+      if (src.items.length === 0) {
+        return ''
+      }
+
       let i = Number(src.current)
       if (i < 0 || i > src.items.length) {
         i = 0

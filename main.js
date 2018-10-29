@@ -10,6 +10,9 @@ const url = require('url')
 const cp = require('child_process')
 let instance = cp.spawn('node',[path.join(__dirname,'dist/server.js')])
 
+const ipcMain = electron.ipcMain
+const ipcRenderer = electron.ipcRenderer
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
