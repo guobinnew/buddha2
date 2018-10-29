@@ -35,7 +35,7 @@
                         style="width: 100%">
                     <el-table-column type="selection" width="55">
                     </el-table-column>
-                    <el-table-column prop="id" label="#" width="50">
+                    <el-table-column prop="id" label="章节" width="50">
                     </el-table-column>
                     <el-table-column label="词汇">
                         <template slot-scope="scope">
@@ -66,10 +66,12 @@
                 </el-table>
                 <el-pagination
                         background
+                        @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
                         :current-page="currentPage"
+                        :page-sizes="[5, 10, 20]"
                         :page-size="pageSize"
-                        layout="prev, pager, next"
+                        layout="prev, pager, next, sizes"
                         :total="currentData.length">
                 </el-pagination>
             </el-main>
@@ -90,197 +92,258 @@
 </template>
 
 <style scoped>
-    .hidden {
-        display: none;
-    }
+.hidden {
+  display: none;
+}
 
-    .el-tabs {
-        width: 100%;
-        height: 100%;
-    }
+.el-tabs {
+  width: 100%;
+  height: 100%;
+}
 
-    .el-main {
-        background-color: white;
-        line-height: 20px;
-    }
+.el-main {
+  background-color: white;
+  line-height: 20px;
+}
 
-    .el-table {
-        text-align: left;
-    }
+.el-table {
+  text-align: left;
+}
 
-    .el-tag {
-        margin-right: 10px;
-        margin-bottom: 4px;
-    }
+.el-tag {
+  margin-right: 10px;
+  margin-bottom: 4px;
+}
 
-    .buddha-newtag {
-        margin-left: 10px;
-        height: 32px;
-        line-height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
+.buddha-newtag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
-    .input-new-tag {
-        width: 90px;
-        margin-left: 10px;
-        vertical-align: bottom;
-    }
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
+}
 
-    .el-pagination {
-        margin-top: 20px;
-        text-align: center;
-    }
+.el-pagination {
+  margin-top: 20px;
+  text-align: center;
+}
 </style>
 
 <script>
-  import logger from "../../logger";
-  import $ from "jquery";
-  import yuchg from "../../base";
-  import utils from './utils'
+import logger from "../../logger";
+import $ from "jquery";
+import yuchg from "../../base";
+import utils from "./utils";
+import CryptoJS from "crypto-js";
 
-  export default {
-    data: function () {
-      return {
-        activeSection: 'first',
-        dialogAddVisible: false,
-        words: {
-          first: [
-            ["早晨", "穿戴", "鲜艳", "服装", "打扮", "校园", "敬爱", "国旗", "敬礼", "铜钟", "教室", "朗读", "安静", "树枝", "这些", "好奇", "招引", "古老", "粗壮", "枝干", "影子", "绒球", "汉族", "停车"],
-            ["阵雨", "荒野", "绿草", "跳舞", "狂欢", "功课", "放假", "互相", "狂风", "自然", "能够", "双臂", "飘落", "笛声", "罚站", "所以", "扬起", "猜谜语", "急急忙忙"],
-            [],
-            [],
-            ["寒冬", "石径", "歪斜", "风霜", "赠送", "盖子", "菊叶", "残破", "君子", "橙黄", "挑战", "刘海儿"],
-            ["金色", "水泥", "放晴", "明朗", "金黄", "雨珠", "落叶", "尽头", "平展", "排列", "规则", "棕红", "叶从", "歌唱", "迟到", "铺满", "紧张", "医院", "刻印", "凌乱", "亮晶晶", "闪闪发光"],
-            ["清凉", "留意", "颜料", "枫叶", "邮票", "果树", "菊花", "仙子", "淡黄", "气味", "香甜", "香味", "过冬", "丰收", "勾住", "歌曲", "盒子", "飘扬", "争吵", "新闻", "鸭梨"],
-            [],
-            ["寒冷", "离开", "一定", "原野", "发生", "剩下", "树根", "斧子", "山谷", "火柴", "村子", "告诉", "灯火", "接着", "等候", "砍伐", "睁眼", "煤油灯"],
-            [],
-            ["旅游", "要好", "咱们", "草堆", "作声", "答应", "做梦", "可怜", "救命", "拼命", "马上", "消化", "当然", "刚才", "知觉", "光亮", "眼泪", "打扫", "胃口", "管理", "河流", "就算", "来得及", "大吃一惊"],
-            []
-          ],
-          second: [
-            ["阵雨", "荒野", "绿草"],
-            ["阵雨", "荒野", "绿草"],
-            ["阵雨", "荒野", "绿草"],
-          ],
-          extend: []
-        },
-        currentData: [],
-        currentModified: [],
-        currentPage: 1,
-        pageSize: 5,
-        addForm: {
-          index: -1,
-          words: ''
-        }
-      };
+export default {
+  props: ["url", "update"],
+  data: function() {
+    return {
+      activeSection: "first",
+      dialogAddVisible: false,
+      loaded: false,
+      words: {
+        first: [],
+        second: [],
+        extend: []
+      },
+      currentData: [],
+      currentModified: [],
+      currentPage: 1,
+      pageSize: 5,
+      addForm: {
+        index: -1,
+        words: ""
+      }
+    };
+  },
+  computed: {},
+  methods: {
+    handleClose(index, tag) {
+      const row = this.currentData[index - 1];
+      row.data.splice(row.data.indexOf(tag), 1);
+      this.setModifyFlag(index);
     },
-    computed: {},
-    methods: {
-      handleClose(index, tag) {
-        const row = this.currentData[index-1]
-        row.data.splice(row.data.indexOf(tag), 1)
-        this.setModifyFlag(index)
-      },
-      handleAdd(index) {
-        this.addForm.index = index
-        this.dialogAddVisible = true
-      },
-      handleDelete(index) {
-        this.addForm.index = index
-        this.$confirm('确认清空该行所有词语?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.currentData[index-1].data = []
-          this.setModifyFlag(index)
-          this.$message('词语已清空')
-        }).catch(() => {
-
+    handleAdd(index) {
+      this.addForm.index = index;
+      this.dialogAddVisible = true;
+    },
+    handleClear(index) {
+      this.addForm.index = index;
+      this.$confirm("确认清空该行所有词语?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.currentData[index - 1].data = [];
+          this.setModifyFlag(index);
+          this.$message("词语已清空");
         })
-      },
-      handleReset(index) {
-        this.addForm.index = index
-        this.$confirm('确认恢复该行所有词语?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.currentData[index-1].data = this.words[this.activeSection][index-1]
-          this.setModifyFlag(index, false)
-          this.$message('词语已恢复')
-        }).catch(() => {
-
+        .catch(() => {});
+    },
+    handleReset(index) {
+      this.addForm.index = index;
+      this.$confirm("确认恢复该行所有词语?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.currentData[index - 1].data = this.words[this.activeSection][
+            index - 1
+          ];
+          this.setModifyFlag(index, false);
+          this.$message("词语已恢复");
         })
-      },
-      onClickAddRow() {
+        .catch(() => {});
+    },
+    onClickAddRow() {
+      let index = this.currentData.length + 1;
+      this.currentData.push({
+        id: index,
+        data: []
+      });
+      this.setModifyFlag(index);
+    },
+    onClickRefresh() {
+      this.dialogAddVisible = true;
+    },
+    onClickSave() {
+      // 保存当前修改
+      let vm = this;
+      this.saveCurrent();
 
-      },
-      onClickRefresh() {
-        this.dialogAddVisible = true
-      },
-      onClickSave() {
-
-      },
-      onClickDownload() {
-
-      },
-      onAddWords() {
-        let words = yuchg.trimString(this.addForm.words)
-        if (words.length === 0){
-          this.$message('请先输入词语')
-          return
-        }
-
-        if (this.addForm.index >= 1) {
-          const src = this.currentData[this.addForm.index - 1]
-          const newWords = this.addForm.words.split(/\s+/)
-          src.data.push.apply(src.data, newWords)
-          this.setModifyFlag(index)
-          this.$message('词语添加成功')
-        } else {
-          this.$message('词语添加失败')
-        }
-        this.dialogAddVisible = false
-      },
-      handleSectionSelect(key, keyPath) {
-        if (this.currentModified.length > 0) { // 有修改
-
-        }
-
-        this.loadWords(key)
-        this.currentData = [].concat(this.words[this.activeSection])
-      },
-      handleCurrentChange: function(currentPage){
-        this.currentPage = currentPage
-      },
-      loadWords(sec) {
-        this.activeSection = sec
-        this.currentData = this.words[this.activeSection].map(function(value, index) {
-          return {id: index+1, data: value}
-        })
-        this.currentModified = []
-      },
-      setModifyFlag(index, flag = true) {
-        if (flag) {
-          if (this.currentModified.indexOf(index) < 0) {
-            this.currentModified.push(index)
+      logger.debug("saveCurrent", this.words);
+      let ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(this.words),
+        "unique@buddha2"
+      );
+      $.ajax({
+        url: this.url,
+        type: "POST",
+        data: { content: ciphertext.toString() },
+        dataType: "json", //指定服务器返回的数据类型
+        success: function(data) {
+          if (data.result == 0) {
+            // 成功
+            // 通知父组件更新
+            vm.$emit("update", vm.words);
+            vm.$message("词语表保存成功");
+          } else {
+            vm.$message("词语表保存失败: " + data.err);
           }
-        } else {
-          this.currentModified.splice(this.currentModified.indexOf(index), 1)
         }
-      },
+      });
     },
-    created: function () {
-      this.loadWords('first')
-    },
-    mounted: function () {
+    onClickDownload() {},
+    onAddWords() {
+      let words = yuchg.trimString(this.addForm.words);
+      if (words.length === 0) {
+        this.$message("请先输入词语");
+        return;
+      }
 
+      if (this.addForm.index >= 1) {
+        const src = this.currentData[this.addForm.index - 1];
+        const newWords = this.addForm.words.split(/\s+/);
+        src.data.push.apply(src.data, newWords);
+        this.setModifyFlag(this.addForm.index);
+        this.$message("词语添加成功");
+      } else {
+        this.$message("词语添加失败");
+      }
+      this.dialogAddVisible = false;
     },
-    activated: function () {
+    saveCurrent() {
+      this.words[this.activeSection] = this.currentData.map(function(
+        value,
+        index
+      ) {
+        return value.data;
+      });
+      this.clearModifyFlag();
+    },
+    handleSectionSelect(key, keyPath) {
+      if (this.currentModified.length > 0) {
+        // 有修改
+        this.$confirm("是否保存当前的修改?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+          .then(() => {
+            this.saveCurrent();
+            this.$message("词语已保存");
+            this.loadWords(key);
+          })
+          .catch(() => {
+            this.loadWords(key);
+          });
+      } else {
+        this.loadWords(key);
+      }
+    },
+    handleCurrentChange: function(currentPage) {
+      this.currentPage = currentPage;
+    },
+    handleSizeChange(val) {
+      this.pageSize = val;
+      this.currentPage = 1;
+    },
+    loadWords(sec) {
+      this.activeSection = sec;
+      this.currentData = this.words[this.activeSection].map(function(
+        value,
+        index
+      ) {
+        return { id: index + 1, data: [].concat(value) };
+      });
+      this.currentModified = [];
+    },
+    setModifyFlag(index, flag = true) {
+      if (flag) {
+        if (this.currentModified.indexOf(index) < 0) {
+          this.currentModified.push(index);
+        }
+      } else {
+        this.currentModified.splice(this.currentModified.indexOf(index), 1);
+      }
+    },
+    clearModifyFlag() {
+      this.currentModified = [];
+    },
+    fetchWords() {
+      if (this.url === "" || this.loaded) {
+        return;
+      }
+      let vm = this;
+      $.ajax({
+        url: this.url,
+        type: "GET",
+        dataType: "json", //指定服务器返回的数据类型
+        success: function(data) {
+          vm.words.first = data.first;
+          vm.words.second = data.second;
+          vm.words.extend = data.extend;
+          vm.loadWords(vm.activeSection);
+        }
+      });
     }
-  };
+  },
+  created: function() {
+  },
+  mounted: function() {
+    this.fetchWords()
+  },
+  activated: function() {}
+};
 </script>
 

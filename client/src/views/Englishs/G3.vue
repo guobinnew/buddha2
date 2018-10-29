@@ -108,7 +108,8 @@ export default {
         first: [],
         second: [],
         extend: []
-      }
+      },
+      url: ''
     };
   },
   methods: {
@@ -154,9 +155,10 @@ export default {
   created: function() {
     // 读取单词表
     let source = this.$store.getters.source
+    this.url = `http://localhost:3000/api/whole/${source}/glossary/g3`
     let vm = this
     $.ajax({
-        url: `http://localhost:3000/api/${source}/glossary/g3`,
+        url: this.url,
         type: "GET",
         dataType: "json", //指定服务器返回的数据类型
         success: function (data) {

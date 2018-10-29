@@ -349,6 +349,7 @@ export default {
           page.name = "welcome";
         }
       }
+      //logger.warn('getPage', course, grade, page)
       return page;
     },
     handleCommand(command) {
