@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-      <el-tabs type="border-card">
-        <el-tab-pane label="单词听写">
+      <el-tabs type="border-card" @tab-click="onTabClick" value="test">
+        <el-tab-pane label="单词听写" name="test">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickStart">开始听写</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickReset">重新开始</el-button>
@@ -43,7 +43,10 @@
           <Word ref="word"></Word>
         </div>
         </el-tab-pane>
-        <el-tab-pane label="记录统计">
+        <el-tab-pane label="词汇管理" name="library">
+          <WordLibrary :url="url" @update="updateWords" ref="wordlib"></WordLibrary>
+        </el-tab-pane>
+        <el-tab-pane label="记录统计"  name="stat">
          记录统计
         </el-tab-pane>
       </el-tabs>
@@ -84,13 +87,14 @@
 
 <script>
 import Word from "../../components/chinese/Word.vue";
+ import WordLibrary from "../../components/chinese/WordLibrary.vue";
 import $ from "jquery";
 import yuchg from '../../base'
 import logger from '../../logger'
 
 
 export default {
-  components: { Word },
+  components: { Word, WordLibrary },
   data: function() {
     return {
       activeName: "1",
@@ -113,6 +117,11 @@ export default {
     };
   },
   methods: {
+     onTabClick(tab) {
+          if (tab.name === 'library') {
+              this.$refs.wordlib.fetchWords()
+          }
+    },
     onClickStart() {
       // 整理单词清单
       const select = this.form.select
@@ -150,9 +159,16 @@ export default {
     updateProfile() {
       this.form.grade = this.$store.getters.gradeFullName;
       this.form.name = this.$store.state.user.name;
+    },
+    updateWords(data) {
+        this.words.first = data.first;
+        this.words.second = data.second;
+        this.words.extend = data.extend;
     }
   },
   created: function() {
+  },
+  mounted: function() {
     // 读取单词表
     let source = this.$store.getters.source
     this.url = `http://localhost:3000/api/whole/${source}/words/g4`
@@ -167,8 +183,6 @@ export default {
           vm.words.extend = data.extend;
         }
     });
-  },
-  mounted: function() {
     this.updateProfile();
   },
   activated: function() {
