@@ -153,11 +153,17 @@ export default {
   },
   created: function() {
     // 读取单词表
-     const dbsrc = this.$store.getters.dbSource
-    $.getJSON(dbsrc + "/g4/words.json", "", data => {
-      this.words.first = data.first;
-      this.words.second = data.second;
-      this.words.extend = data.extend;
+    let source = this.$store.getters.source
+    let vm = this
+    $.ajax({
+        url: `http://localhost:3000/api/${source}/words/g4`,
+        type: "GET",
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          vm.words.first = data.first;
+          vm.words.second = data.second;
+          vm.words.extend = data.extend;
+        }
     });
   },
   mounted: function() {

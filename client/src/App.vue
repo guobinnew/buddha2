@@ -365,10 +365,7 @@ export default {
         return;
       }
       
-      
       const vm = this
-      logger.warn(vm.form)
-
       $.ajax({
         url: "http://localhost:3000/api/updateProfile",
         type: "POST",

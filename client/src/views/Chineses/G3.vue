@@ -158,12 +158,17 @@ export default {
   },
   created: function() {
     // 读取单词表
-    const dbsrc = this.$store.getters.dbSource
-    this.dbsource = dbsrc + "/g3/words.json"
-    $.getJSON(this.dbsource, "", data => {
-      this.words.first = data.first;
-      this.words.second = data.second;
-      this.words.extend = data.extend;
+    let source = this.$store.getters.source
+    let vm = this
+    $.ajax({
+        url: `http://localhost:3000/api/${source}/words/g3`,
+        type: "GET",
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          vm.words.first = data.first;
+          vm.words.second = data.second;
+          vm.words.extend = data.extend;
+        }
     });
   },
   mounted: function() {
