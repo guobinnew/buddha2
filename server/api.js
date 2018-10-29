@@ -6,6 +6,7 @@ var router = express.Router()
 var logger = require('./logger.js').logger
 var path = require('path')
 var fs = require('fs')
+var CryptoJS = require('crypto-js')
 
 
 const emptyWords = {
@@ -84,18 +85,20 @@ router.post('/updateProfile', function(req, res, next) {
 
 // 获取词汇表
 const dbpath = path.join(__dirname, 'data/db')
-router.get('/:source/:type/:grade', function(req, res, next) {
+router.get('/whole/:source/:type/:grade', function(req, res, next) {
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
   var json = readWordFileSync(_path)
   res.json(json)
 })
 
 // 更新词汇表
-router.post('/file/:source/:type/:grade', function(req, res, next) {
+router.post('/whole/:source/:type/:grade', function(req, res, next) {
   // 覆盖目标文件
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
   try {
-    fs.writeFileSync(_path, req.body)
+    var bytes  = CryptoJS.AES.decrypt(req.body.content.toString(), 'unique@buddha2');
+    var json = bytes.toString(CryptoJS.enc.Utf8);
+    fs.writeFileSync(_path, json)
     res.json(errorCodes.OK)
   } catch (err) {
     logger.log('error','write file <' + _path + '> failed -' + err)
