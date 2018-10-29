@@ -22,23 +22,25 @@
             </el-aside>
             <el-main>
                 <el-button-group>
+                    <el-button type="primary" icon="el-icon-edit" @click="onClickAddRow">添加</el-button>
                     <el-button type="primary" icon="el-icon-edit" @click="onClickRefresh">重新加载</el-button>
                     <el-button type="success" icon="el-icon-share" @click="onClickSave">保存</el-button>
                     <el-button type="danger" icon="el-icon-delete" @click="onClickDownload">下载</el-button>
                 </el-button-group>
                 <el-table
-                        ref="multipleTable"
-                        :data="currentData"
+                        ref="wordTable"
+                        :data="currentData.slice((currentPage-1) * pageSize, currentPage * pageSize)"
+                        stripe
                         tooltip-effect="dark"
                         style="width: 100%">
                     <el-table-column type="selection" width="55">
                     </el-table-column>
-                    <el-table-column type="index" width="50">
+                    <el-table-column prop="id" label="#" width="50">
                     </el-table-column>
                     <el-table-column label="词汇">
                         <template slot-scope="scope">
-                            <el-tag :key="tag" v-for="tag in scope.row" size="medium" closable type="success"
-                                    @close="handleClose(activeName, scope.$index, tag)">{{ tag }}
+                            <el-tag v-for="tag in scope.row.data" size="medium" closable type="success"
+                                    @close="handleClose(scope.row.id, tag)">{{ tag }}
                             </el-tag>
                         </template>
                     </el-table-column>
@@ -47,25 +49,28 @@
                             <el-button
                                     size="mini"
                                     type="primary"
-                                    @click="handleAdd(scope.$index)">添加
+                                    @click="handleAdd(scope.row.id)">添加
                             </el-button>
                             <el-button
                                     size="mini"
                                     type="danger"
-                                    @click="handleClear(scope.$index)">清空
+                                    @click="handleClear(scope.row.id)">清空
                             </el-button>
                             <el-button
                                     size="mini"
                                     type="success"
-                                    @click="handleDelete(scope.$index)">恢复
+                                    @click="handleReset(scope.row.id)">恢复
                             </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
                 <el-pagination
                         background
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-size="pageSize"
                         layout="prev, pager, next"
-                        :total="1000">
+                        :total="currentData.length">
                 </el-pagination>
             </el-main>
         </el-container>
@@ -162,8 +167,9 @@
           extend: []
         },
         currentData: [],
+        currentModified: [],
         currentPage: 1,
-        pagesize: 5,
+        pageSize: 5,
         addForm: {
           index: -1,
           words: ''
@@ -172,16 +178,45 @@
     },
     computed: {},
     methods: {
-      handleClose(sec, lesson, tag) {
-        const arr = this.words[sec][lesson]
-        arr.splice(arr.indexOf(tag), 1)
+      handleClose(index, tag) {
+        const row = this.currentData[index-1]
+        row.data.splice(row.data.indexOf(tag), 1)
+        this.setModifyFlag(index)
       },
       handleAdd(index) {
         this.addForm.index = index
         this.dialogAddVisible = true
       },
       handleDelete(index) {
-        console.log(index);
+        this.addForm.index = index
+        this.$confirm('确认清空该行所有词语?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.currentData[index-1].data = []
+          this.setModifyFlag(index)
+          this.$message('词语已清空')
+        }).catch(() => {
+
+        })
+      },
+      handleReset(index) {
+        this.addForm.index = index
+        this.$confirm('确认恢复该行所有词语?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.currentData[index-1].data = this.words[this.activeSection][index-1]
+          this.setModifyFlag(index, false)
+          this.$message('词语已恢复')
+        }).catch(() => {
+
+        })
+      },
+      onClickAddRow() {
+
       },
       onClickRefresh() {
         this.dialogAddVisible = true
@@ -199,9 +234,11 @@
           return
         }
 
-        if (this.addForm.index >= 0) {
-          const src = this.currentData[this.addForm.index]
-          src.push.apply(src,this.addForm.words.split(' '))
+        if (this.addForm.index >= 1) {
+          const src = this.currentData[this.addForm.index - 1]
+          const newWords = this.addForm.words.split(/\s+/)
+          src.data.push.apply(src.data, newWords)
+          this.setModifyFlag(index)
           this.$message('词语添加成功')
         } else {
           this.$message('词语添加失败')
@@ -209,12 +246,35 @@
         this.dialogAddVisible = false
       },
       handleSectionSelect(key, keyPath) {
-        this.activeSection = key;
+        if (this.currentModified.length > 0) { // 有修改
+
+        }
+
+        this.loadWords(key)
         this.currentData = [].concat(this.words[this.activeSection])
-      }
+      },
+      handleCurrentChange: function(currentPage){
+        this.currentPage = currentPage
+      },
+      loadWords(sec) {
+        this.activeSection = sec
+        this.currentData = this.words[this.activeSection].map(function(value, index) {
+          return {id: index+1, data: value}
+        })
+        this.currentModified = []
+      },
+      setModifyFlag(index, flag = true) {
+        if (flag) {
+          if (this.currentModified.indexOf(index) < 0) {
+            this.currentModified.push(index)
+          }
+        } else {
+          this.currentModified.splice(this.currentModified.indexOf(index), 1)
+        }
+      },
     },
     created: function () {
-      this.currentData = this.words[this.activeSection]
+      this.loadWords('first')
     },
     mounted: function () {
 
