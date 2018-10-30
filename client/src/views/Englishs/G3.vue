@@ -83,6 +83,11 @@
 .buddha-page {
   margin-top: 20px;
 }
+
+.el-checkbox {
+  margin-left: 0px;
+  margin-right: 10px;
+}
 </style>
 
 <script>

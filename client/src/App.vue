@@ -23,7 +23,7 @@
                     </el-menu-item>
                     <el-menu-item index="4">
                         <i class="el-icon-setting"></i>
-                        <span slot="title">编程</span>
+                        <span slot="title">逻辑</span>
                     </el-menu-item>
                 </el-menu>
             </el-aside>
@@ -68,7 +68,7 @@
                   </el-dropdown>
                 </el-header>
                 <el-main>
-                    <router-view/>
+                    <router-view v-if="isRouterAlive"/>
                 </el-main>
                 <el-footer>
                     <h4><span class="buddha-version">{{ appTitle }}</span>{{ copyright }}</h4>
@@ -263,7 +263,8 @@ export default {
         name: "",
         class: 1,
         source: "rj"
-      }
+      },
+      isRouterAlive: true
     };
   },
   computed: {
@@ -349,7 +350,6 @@ export default {
           page.name = "welcome";
         }
       }
-      //logger.warn('getPage', course, grade, page)
       return page;
     },
     handleCommand(command) {
@@ -380,26 +380,19 @@ export default {
             vm.profile.source = vm.$store.getters.source;
             vm.dialogInfoVisible = false;
             vm.$message("学生信息修改成功");
+            // 重新加载当前页面
+            vm.reload()
           } else {
             vm.$message("学生信息修改失败: " + data.err);
           }
         }
       });
     },
-    saveToFile() {
-      // const _manifestpath = path.join(_datapath, "manifest.json");
-      // // 写入
-      // this.manifest.user.name = this.$store.state.user.name;
-      // this.manifest.class = this.$store.state.user.class;
-      // this.manifest.database.sources.current = this.$store.state.database.sources.current;
-
-      // fs.writeFile(_manifestpath, JSON.stringify(this.manifest), err => {
-      //   if (err) {
-      //     this.$message("Manifest保存失败");
-      //   } else {
-      //     logger.debug("Mainifest保存成功");
-      //   }
-      // });
+    reload() {
+      this.isRouterAlive = false
+      this.$nextTick(function(){
+        this.isRouterAlive = true
+      })
     }
   },
   created: function() {

@@ -89,6 +89,11 @@
     .buddha-page {
         margin-top: 20px;
     }
+
+    .el-checkbox {
+       margin-left: 0px;
+       margin-right: 10px;
+    }
 </style>
 
 <script>
@@ -176,7 +181,7 @@
      
     },
     mounted: function () {
-       // 读取单词表
+      // 读取单词表
       let source = this.$store.getters.source
       this.url = `http://localhost:3000/api/whole/${source}/words/g3`
       let vm = this
@@ -185,9 +190,7 @@
         type: "GET",
         dataType: "json", //指定服务器返回的数据类型
         success: function (data) {
-          vm.words.first = data.first;
-          vm.words.second = data.second;
-          vm.words.extend = data.extend;
+          vm.updateWords(data)
         }
       });  
       this.updateProfile();

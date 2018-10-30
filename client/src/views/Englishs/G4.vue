@@ -43,10 +43,10 @@
           <Word ref="word"></Word>
         </div>
         </el-tab-pane>
-        <el-tab-pane label="词汇管理" name="library">
-          <WordLibrary :url="url" @update="updateWords" ref="wordlib"></WordLibrary>
+        <el-tab-pane label="单词管理" name="library">
+         <WordLibrary :url="url" @update="updateWords" ref="wordlib"></WordLibrary>
         </el-tab-pane>
-        <el-tab-pane label="记录统计"  name="stat">
+        <el-tab-pane label="记录统计" name="stat">
          记录统计
         </el-tab-pane>
       </el-tabs>
@@ -91,8 +91,8 @@
 </style>
 
 <script>
-import Word from "../../components/chinese/Word.vue";
- import WordLibrary from "../../components/chinese/WordLibrary.vue";
+import Word from "../../components/english/Word.vue";
+import WordLibrary from "../../components/english/WordLibrary.vue";
 import $ from "jquery";
 import yuchg from '../../base'
 import logger from '../../logger'
@@ -118,7 +118,7 @@ export default {
         second: [],
         extend: []
       },
-       url: ''
+      url: ''
     };
   },
   methods: {
@@ -126,7 +126,7 @@ export default {
           if (tab.name === 'library') {
               this.$refs.wordlib.fetchWords()
           }
-    },
+      },
     onClickStart() {
       // 整理单词清单
       const select = this.form.select
@@ -148,7 +148,7 @@ export default {
       }
 
       if (selwords.length <= 0) {
-        this.$message("选择要听写的课文没有词语表，请检查单词数据表是否正确");
+        this.$message("选择要听写的课文没有单词表，请检查单词数据表是否正确");
         return;
       }
 
@@ -166,17 +166,15 @@ export default {
       this.form.name = this.$store.state.user.name;
     },
     updateWords(data) {
-        this.words.first = data.first;
-        this.words.second = data.second;
-        this.words.extend = data.extend;
+      this.words.first = data.first;
+      this.words.second = data.second;
+      this.words.extend = data.extend;
     }
   },
   created: function() {
-  },
-  mounted: function() {
     // 读取单词表
     let source = this.$store.getters.source
-    this.url = `http://localhost:3000/api/whole/${source}/words/g4`
+    this.url = `http://localhost:3000/api/whole/${source}/glossary/g4`
     let vm = this
     $.ajax({
         url: this.url,
@@ -188,6 +186,8 @@ export default {
           vm.words.extend = data.extend;
         }
     });
+  },
+  mounted: function() {
     this.updateProfile();
   },
   activated: function() {
