@@ -1,0 +1,14 @@
+{
+  "rootPath": "data/download",
+  "indexes": [
+    {
+      "id": "111112222",
+      "type": "chinese",
+      "source": "rj",
+      "grade": "g3",
+      "title": "小学三年级语文词汇表(人教版)",
+      "author": "Unique",
+      "path": "words.json"
+    }
+  ]
+}

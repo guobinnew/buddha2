@@ -1,0 +1,20 @@
+{
+  "appName": "懒家长",
+  "version": "0.1.0",
+  "company": "Unique",
+  "database": {
+    "sources": {
+      "current": 0,
+      "items": [
+        {
+          "id": "rj",
+          "name": "人教版"
+        },
+        {
+          "id": "bsd",
+          "name": "北师大版"
+        }
+      ]
+    }
+  }
+}

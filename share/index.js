@@ -30,7 +30,7 @@
         colorize: true
       }),
       new winston.transports.File({
-        filename: './logs/success.log'
+        filename: './logs/share_success.log'
       })
     ]
   }));
@@ -46,7 +46,7 @@
     next()
   })
 
-  app.use('/api', require('./api'));
+  app.use('/share', require('./api'));
 
   // 错误请求的日志
   app.use(expressWinston.errorLogger({
@@ -56,13 +56,13 @@
         colorize: true
       }),
       new winston.transports.File({
-        filename: './logs/error.log'
+        filename: './logs/share_error.log'
       })
     ]
   }));
 
   var server = app.listen(settings.server.port, function() {
-    console.log('info', '本地前台服务器启动，正在监听端口<' + settings.server.port + '>...')
+    console.log('info', '本地共享存储服务器启动，正在监听端口<' + settings.server.port + '>...')
   })
 
 }());
