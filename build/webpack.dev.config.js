@@ -8,7 +8,7 @@ const dataPath = path.join(__dirname, '../server/data')
 module.exports = {
     target:'node',
     mode: 'development',
-    entry: path.join(__dirname, '../server/wrapper.js'),
+    entry: path.join(__dirname, '../server/index.js'),
     output: {
       path: distPath,
       filename: 'server.js'

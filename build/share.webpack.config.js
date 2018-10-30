@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path')
@@ -24,17 +23,8 @@ module.exports = {
     }]
   },
   node: {
-    __filename: true,
-    __dirname: true
-  },
-  optimization: {
-    minimizer: [
-      new UglifyJsPlugin({
-        uglifyOptions: {
-          compress: false
-        }
-      })
-    ]
+    __filename: false,
+    __dirname: false
   },
   plugins: [
     new CleanWebpackPlugin(["dist"], {

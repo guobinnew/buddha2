@@ -9,10 +9,10 @@
     "publish": "electron-packager ./ buddha --platform=mas --arch=x64 --app_version=1.0.0 --electron_version=2.0.2  --out=dist/ --overwrite --ignore=node_modules/electron* --ignore=node_mudules/.bin --ignore=.git --ignore=dist --prune",
     "server": "node ./dist/server.js",
     "test": "mocha",
-    "build:server": "./node_modules/.bin/webpack --config ./build/webpack.config.js --mode development",
+    "build:server": "./node_modules/.bin/webpack --config ./build/webpack.config.js",
     "nodemon:server": "./node_modules/.bin/nodemon --config ./build/nodemon.json ./server/wrapper.js",
     "share": "node ./share/dist/server.js",
-    "build:share": "./node_modules/.bin/webpack --config ./build/share.webpack.config.js --mode development",
+    "build:share": "./node_modules/.bin/webpack --config ./build/share.webpack.config.js",
     "nodemon:share": "./node_modules/.bin/nodemon --config ./build/share.shanodemon.json ./share/index.js"
   },
   "author": "",

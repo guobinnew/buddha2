@@ -3,24 +3,39 @@
 
   var express = require('express')
   var path = require('path')
+  var fs = require('fs')
   var winston = require('winston')
   var expressWinston = require('express-winston')
   var cookieParser = require('cookie-parser')
   var bodyParser = require('body-parser')
-  var session = require('express-session'); // session中间件
   var settings = require('./setting')
+  var api = require('./api')
 
   var app = express()
 
   // root参数指定静态文件的根目录
-  var rootDir = path.resolve(__dirname, '../client/dist')
+  var rootDir = path.join(__dirname, 'data')
   app.use('/', express.static(rootDir))
   app.use(bodyParser.urlencoded({
     extended: true
   }))
   app.use(bodyParser.json())
   app.use(cookieParser())
-  app.use(session(settings.session));
+
+  // 创建日志目录
+  var logDir = path.join(__dirname, 'logs')
+  //检测文件或者文件夹存在
+  function fsExistsSync(path) {
+    try{
+      fs.accessSync(path,fs.F_OK);
+    }catch(e){
+      return false;
+    }
+    return true;
+  }
+  if (!fsExistsSync(logDir)) {
+    fs.mkdirSync(logDir)
+  }
 
   // 正常请求的日志
   app.use(expressWinston.logger({
@@ -30,7 +45,7 @@
         colorize: true
       }),
       new winston.transports.File({
-        filename: './logs/share_success.log'
+        filename: path.join(logDir, 'success.log'),
       })
     ]
   }));
@@ -46,7 +61,7 @@
     next()
   })
 
-  app.use('/share', require('./api'));
+  app.use('/share', api);
 
   // 错误请求的日志
   app.use(expressWinston.errorLogger({
@@ -56,7 +71,7 @@
         colorize: true
       }),
       new winston.transports.File({
-        filename: './logs/share_error.log'
+        filename: path.join(logDir, 'error.log'),
       })
     ]
   }));

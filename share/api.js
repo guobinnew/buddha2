@@ -10,12 +10,12 @@ var CryptoJS = require('crypto-js')
 var settings = require('./setting')
 
 
-const emptyIndex = {
+var emptyIndex = {
   "rootPath": "data/download",
   "indexes": []
 }
 
-const errorCodes = {
+var errorCodes = {
   OK:  {result: 0, err: ''},
   SOURCE_TYPE_ERROR: {result: 1, err: '教程类型错误'},
   WRITE_DATAFILE_ERROR: {result: 100, err: '更新数据文件时发生错误'},
@@ -24,9 +24,11 @@ const errorCodes = {
 }
 
 // 同步读取文件
-const downloadIndexPath = path.join(__dirname, 'data/download.json')
+var dataPath = path.join(__dirname, 'data')
+var downloadIndexPath = path.join(dataPath, 'download.json')
+
 function readIndexFileSync(path, create = true) {
-  let content = emptyIndex
+  var content = emptyIndex
   try {
     if (!fs.existsSync(path)) {
       if (create) {
@@ -77,7 +79,7 @@ var downloadIndexUpdateTime = Date.now()
 // 更新download索引
 function updateDownloadIndex() {
   // 比较时间
-  let interval = Date.now() - downloadIndexUpdateTime
+  var interval = Date.now() - downloadIndexUpdateTime
   if (!downloadIndexMap || !downloadIndexGradeMap || !downloadIndexTypeMap || interval > 300000 ){  // 更新周期为5分钟
     // 重新读取文件
     let data = readIndexFileSync(downloadIndexPath)
@@ -107,12 +109,12 @@ router.get('/index/:type/:grade', function(req, res, next) {
   // 更新索引
   updateDownloadIndex()
   // 根据类型遍历
-  const gradeSet = downloadIndexGradeMap[req.params.grade]
+  var gradeSet = downloadIndexGradeMap[req.params.grade]
   if (!gradeSet) {
     res.json(errorCodes.OK)
   } else {
     // 匹配类型
-    const type = req.params.type
+    var type = req.params.type
     let data = gradeSet.filter(function (value, index) {
       return value.type === type
     })
@@ -133,7 +135,7 @@ router.get('/indextype/:type', function(req, res, next) {
   // 更新索引
   updateDownloadIndex()
   // 根据类型遍历
-  const typeSet = downloadIndexTypeMap[req.params.type]
+  var typeSet = downloadIndexTypeMap[req.params.type]
   if (!typeSet) {
     res.json(errorCodes.OK)
   } else {
@@ -154,7 +156,7 @@ router.get('/indexgrade/:grade', function(req, res, next) {
   // 更新索引
   updateDownloadIndex()
   // 根据类型遍历
-  const gradeSet = downloadIndexGradeMap[req.params.grade]
+  var gradeSet = downloadIndexGradeMap[req.params.grade]
   if (!gradeSet) {
     res.json(errorCodes.OK)
   } else {
@@ -181,7 +183,7 @@ router.get('/download/:fileid', function(req, res, next) {
   if (!info) {
     res.status(404).end()
   } else {
-    res.download(path.join(downloadRootPath, info.path))
+    res.download(path.join(dataPath, downloadRootPath, info.path))
   }
 })
 
