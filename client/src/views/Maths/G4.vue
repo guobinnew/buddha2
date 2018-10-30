@@ -1,52 +1,32 @@
 <template>
-    <div class="container">
-      <HardOral source="g4"></HardOral>
-    </div>
+    <el-tabs type="border-card">
+        <el-tab-pane label="每日口算">
+            <HardOral :source="source" ref="oral"></HardOral>
+        </el-tab-pane>
+        <el-tab-pane label="成绩统计" name="score">
+            <Chart :source="source" ref="chart"></Chart>
+        </el-tab-pane>
+    </el-tabs>
 </template>
 
 <style scoped>
-.container {
-  line-height: 20px;
-  min-width: 800px; 
-}
-
 .el-tabs {
-  height: 100%;
-}
-
-.el-collapse {
-  margin-top: 10px;
-}
-
-.buddha-page {
-  background-color: white;
-  margin: 0 auto;
-  width: 600px;
-  font-family: Microsoft YaHei;
-}
-
-.el-form-item {
-  text-align: left;
-}
-
-.line {
-  text-align: right;
-  float: left;
-  font-size: 14px;
-  color: #606266;
-  line-height: 40px;
-  padding: 0 12px 0 0;
+    line-height: 20px;
 }
 </style>
 
 <script>
 import HardOral from '../../components/maths/HardOral.vue'
 import logger from '../../logger'
+import Chart from '../../components/maths/Chart.vue'
+import $ from "jquery"
+import yuchg from "../../base"
 
 export default {
-  components: { HardOral },
+  components: { HardOral, Chart },
   data: function() {
     return {
+      source: 'g4'
     }
   },
   computed: {

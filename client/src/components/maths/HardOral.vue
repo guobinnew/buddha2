@@ -1,6 +1,5 @@
 <template>
-      <el-tabs type="border-card">
-        <el-tab-pane label="每日口算">
+    <div class="container">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
@@ -55,21 +54,13 @@
         <div id="buddha-page" class="buddha-page">
           <Page v-if="content" :content="content" :minLength="120"></Page>
         </div>
-        </el-tab-pane>
-        <el-tab-pane label="成绩统计">
-         成绩统计
-        </el-tab-pane>
-      </el-tabs>
+    </div>
 </template>
 
 <style scoped>
 .container {
   line-height: 20px;
   min-width: 800px;
-}
-
-.el-tabs {
-  height: 100%;
 }
 
 .el-collapse {

@@ -1,6 +1,5 @@
 <template>
-      <el-tabs type="border-card">
-        <el-tab-pane label="每日口算">
+    <div class="container">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
@@ -49,21 +48,13 @@
         <div id="buddha-page" class="buddha-page">
           <Page v-if="content" :content="content"></Page>
         </div>
-        </el-tab-pane>
-        <el-tab-pane label="成绩统计" name="score">
-          <Chart :source="source" ref="chart"></Chart>
-        </el-tab-pane>
-      </el-tabs>
+    </div>
 </template>
 
 <style scoped>
 .container {
   line-height: 20px;
   min-width: 800px;
-}
-
-.el-tabs {
-  height: 100%;
 }
 
 .el-collapse {
@@ -97,7 +88,6 @@
 
 <script>
 import Page from "./Page.vue";
-import Chart from './Chart.vue'
 import logger from "../../logger";
 import utils from "./utils";
 import $ from "jquery";
@@ -107,7 +97,7 @@ import * as jsPDF from "jspdf";
 
 export default {
   props: ["source"],
-  components: { Page, Chart },
+  components: { Page },
   data: function() {
     return {
       activeName: "1",
