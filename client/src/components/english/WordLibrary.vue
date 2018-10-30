@@ -25,7 +25,7 @@
                     <el-button type="primary" icon="el-icon-edit" @click="onClickAddRow">添加</el-button>
                     <el-button type="primary" icon="el-icon-edit" @click="onClickRefresh">重新加载</el-button>
                     <el-button type="success" icon="el-icon-share" @click="onClickSave">保存</el-button>
-                    <el-button type="danger" icon="el-icon-delete" @click="onClickEport">导出</el-button>
+                    <el-button type="danger" icon="el-icon-delete" @click="onClickExport">导出</el-button>
                 </el-button-group>
                 <el-table
                         ref="wordTable"
@@ -40,7 +40,7 @@
                     <el-table-column label="词汇">
                         <template slot-scope="scope">
                             <el-tag v-for="tag in scope.row.data" size="medium" closable type="success"
-                                    @close="handleClose(scope.row.id, tag)">{{ tag }}
+                                    @close="handleClose(scope.row.id, tag)">{{ tag[0] + ' - ' + tag[1] }}
                             </el-tag>
                         </template>
                     </el-table-column>
@@ -77,12 +77,26 @@
             </el-main>
         </el-container>
         <el-dialog title="添加词语" :visible.sync="dialogAddVisible">
+            <p>中英文使用#分隔开，格式实例： english#英语</p>
+            <el-tag
+                v-for="tag in addForm.words"
+                closable
+                :disable-transitions="false"
+                @close="handleNewTagClose(tag)">
+                 {{tag[0] + ' - ' + tag[1]}}
+            </el-tag>
             <el-input
-                    type="textarea"
-                    autosize
-                    placeholder="词语(以空格隔开)"
-                    v-model="addForm.words">
+              class="input-newtag"
+              v-if="addForm.inputVisible"
+              v-model="addForm.inputValue"
+              ref="saveTagInput"
+              size="small"
+              @keyup.enter.native="handleInputConfirm"
+              @blur="handleInputConfirm"
+            >
             </el-input>
+            <el-button v-else class="buddha-newtag" size="small" @click="showInput">添加词语</el-button>
+
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogAddVisible = false">取 消</el-button>
                 <el-button type="primary" @click="onAddWords">保 存</el-button>
@@ -123,7 +137,7 @@
   padding-bottom: 0;
 }
 
-.input-new-tag {
+.input-newtag {
   width: 90px;
   margin-left: 10px;
   vertical-align: bottom;
@@ -141,7 +155,7 @@ import $ from "jquery";
 import yuchg from "../../base";
 import utils from "./utils";
 import CryptoJS from "crypto-js";
-import saveAs from 'file-saver';
+import saveAs from "file-saver";
 
 export default {
   props: ["url", "update"],
@@ -161,7 +175,9 @@ export default {
       pageSize: 5,
       addForm: {
         index: -1,
-        words: ""
+        words: [],
+        inputVisible: false,
+        inputValue: ''
       }
     };
   },
@@ -169,7 +185,14 @@ export default {
   methods: {
     handleClose(index, tag) {
       const row = this.currentData[index - 1];
-      row.data.splice(row.data.indexOf(tag), 1);
+      let idx = -1;
+      row.data.forEach(function(value, index) {
+        if (value[0] === tag[0]) {
+          idx = index;
+          return false;
+        }
+      });
+      row.data.splice(idx, 1);
       this.setModifyFlag(index);
     },
     handleAdd(index) {
@@ -201,10 +224,42 @@ export default {
           this.currentData[index - 1].data = this.words[this.activeSection][
             index - 1
           ];
-          this.setModifyFlag(index, false);
-          this.$message("词语已恢复");
+          this.setModifyFlag(index, false)
+          this.$message("词语已恢复")
         })
-        .catch(() => {});
+        .catch(() => {})
+    },
+    handleNewTagClose(tag) {
+      let idx = -1
+      this.addForm.words.forEach(function(value, index) {
+        if (value[0] === tag[0]) {
+          idx = index
+          return false
+        }
+      })
+      this.addForm.words.splice(idx, 1)
+    },
+    showInput() {
+      this.addForm.inputVisible = true;
+        this.$nextTick(_ => {
+          this.$refs.saveTagInput.$refs.input.focus();
+        });
+      },
+    handleInputConfirm() {
+      let inputValue = this.addForm.inputValue;
+      if (inputValue) {
+        // 分解
+        const newWords = yuchg.trimString(inputValue).split(/\s*#\s*/).filter(function(value){
+          return value.length > 0
+        })
+        if (newWords.length !== 2) {
+          this.$message('输入格式有误')
+          return
+        }
+        this.addForm.words.push(newWords)
+      }
+      this.addForm.inputVisible = false;
+      this.addForm.inputValue = '';
     },
     onClickAddRow() {
       let index = this.currentData.length + 1;
@@ -215,21 +270,19 @@ export default {
       this.setModifyFlag(index);
     },
     onClickRefresh() {
-        if (this.currentModified.length > 0) {
+      if (this.currentModified.length > 0) {
         // 有修改
         this.$confirm("确认重新加载单词表，放弃当前的修改?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         })
-        .then(() => {
-           this.fetchWords()
-        })
-        .catch(() => {
-          
-        });
+          .then(() => {
+            this.fetchWords();
+          })
+          .catch(() => {});
       } else {
-         this.fetchWords()
+        this.fetchWords();
       }
     },
     onClickSave() {
@@ -260,24 +313,21 @@ export default {
       });
     },
     onClickExport() {
-      let str = JSON.stringify(this.words)
-      var file = new File([str], "word" + yuchg.randomString(8) + ".json", {type: "text/plain;charset=utf-8"});
+      let str = JSON.stringify(this.words);
+      var file = new File([str], "word" + yuchg.randomString(8) + ".json", {
+        type: "text/plain;charset=utf-8"
+      });
       saveAs(file);
     },
     onAddWords() {
-      let words = yuchg.trimString(this.addForm.words);
-      if (words.length === 0) {
+      if (this.addForm.words.length === 0) {
         this.$message("请先输入词语");
         return;
       }
-
       if (this.addForm.index >= 1) {
         const src = this.currentData[this.addForm.index - 1];
-        const newWords = this.addForm.words.split(/\s+/).filter(function(value){
-          return value.length > 0
-        });
-        src.data.push.apply(src.data, newWords);
-        this.addForm.words = ''
+        src.data.push.apply(src.data, this.addForm.words);
+        this.addForm.words = []
         this.setModifyFlag(this.addForm.index);
         this.$message("词语添加成功");
       } else {
@@ -361,10 +411,9 @@ export default {
       });
     }
   },
-  created: function() {
-  },
+  created: function() {},
   mounted: function() {
-    this.fetchWords()
+    this.fetchWords();
   },
   activated: function() {}
 };

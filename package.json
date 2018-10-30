@@ -10,7 +10,7 @@
     "server": "node ./dist/server.js",
     "test": "mocha",
     "build:server": "./node_modules/.bin/webpack --config ./build/webpack.config.js",
-    "nodemon:server": "./node_modules/.bin/nodemon --config ./build/nodemon.json ./server/wrapper.js",
+    "nodemon:server": "./node_modules/.bin/nodemon --config ./build/nodemon.json ./server/index.js",
     "share": "node ./share/dist/server.js",
     "build:share": "./node_modules/.bin/webpack --config ./build/share.webpack.config.js",
     "nodemon:share": "./node_modules/.bin/nodemon --config ./build/share.shanodemon.json ./share/index.js"
