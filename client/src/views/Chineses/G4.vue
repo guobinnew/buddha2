@@ -183,9 +183,11 @@ export default {
         type: "GET",
         dataType: "json", //指定服务器返回的数据类型
         success: function (data) {
-          vm.words.first = data.first;
-          vm.words.second = data.second;
-          vm.words.extend = data.extend;
+          if (data.result === 0) {
+            vm.updateWords(data.data)
+          } else {
+            vm.$message.error('读取词汇表失败 -' + data.err)
+          }
         }
     });
     this.updateProfile();

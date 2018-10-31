@@ -99,7 +99,7 @@
       </el-dialog>
         <el-dialog title="身份确认" :visible.sync="dialogAuthVisible">
             <el-form :model="authForm" label-width="100px">
-                <el-form-item label="管理员口令">
+                <el-form-item label="管理员口令" prop="pwd" :rules="{required: true, message: '密码不能为空', trigger: 'blur'}">
                     <el-input v-model="authForm.pwd" autocomplete="off"></el-input>
                 </el-form-item>
             </el-form>
@@ -252,6 +252,7 @@ import ElContainer from "../node_modules/element-ui/packages/container/src/main"
 import logger from "./logger";
 import yuchg from "./base";
 import $ from "jquery";
+import CryptoJS from 'crypto-js'
 logger.setLevel("debug");
 
 export default {
@@ -414,12 +415,18 @@ export default {
       })
     },
     onAuthUser() {
+      if (this.authForm.pwd === '') {
+        return
+      }
+
       let vm = this
       // 提交验证请求
       $.ajax({
         url: "http://localhost:3000/api/login",
         type: "POST",
-        data: this.authForm,
+        data: {
+          pwd: CryptoJS.SHA256(this.authForm.pwd).toString(CryptoJS.enc.Hex)
+        },
         dataType: "json", //指定服务器返回的数据类型
         success: function (data) {
           if (data.result == 0) {

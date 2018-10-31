@@ -425,10 +425,12 @@
           type: "GET",
           dataType: "json", //指定服务器返回的数据类型
           success: function (data) {
-            vm.words.first = data.first;
-            vm.words.second = data.second;
-            vm.words.extend = data.extend;
-            vm.loadWords(vm.activeSection);
+            if (data.result === 0) {
+              vm.words = yuchg.cloneObject(data.data)
+              vm.loadWords(vm.activeSection);
+            } else {
+              vm.$message.error('读取词汇表失败 -' + data.err)
+            }
           }
         });
       }
