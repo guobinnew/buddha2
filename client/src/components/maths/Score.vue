@@ -105,7 +105,7 @@
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
-                    :page-sizes="[5, 10, 20, 50]"
+                    :page-sizes="[10, 20, 50]"
                     :page-size="pageSize"
                     layout="prev, pager, next, sizes"
                     :total="scoreData.length">
@@ -156,7 +156,7 @@
 
     #buddha-chart {
         width: 100%;
-        height: 500px;
+        height: 600px;
     }
 
     .buddha-tag {
@@ -190,11 +190,12 @@
           level: "2",
           wrong: 0,
           minute: 5,
-          second: 0
+          second: 0,
+          score: 0
         },
         currentModified: {},
         currentPage: 1,
-        pageSize: 5,
+        pageSize: 10,
         scoreData: [],
         modified: false
       };
@@ -208,6 +209,11 @@
           tooltip: {
             trigger: "axis"
           },
+          grid: {
+            left: '10%',
+            right: '10%',
+            bottom: '15%'
+          },
           legend: {
             data: ["题目总数", "错误数目", "完成时间"]
           },
@@ -220,6 +226,15 @@
               saveAsImage: {show: true}
             }
           },
+          dataZoom: [
+            {
+              show: true,
+              type: 'slider',
+              y: '90%',
+              start: 0,
+              end: 100
+            }
+          ],
           calculable: true,
           xAxis: [
             {
@@ -248,11 +263,13 @@
             {
               name: "题目总数",
               type: "line",
+              smooth: true,
               data: [],
             },
             {
               name: "错误数目",
               type: "line",
+              smooth: true,
               data: [],
               markPoint: {
                 data: [
@@ -267,6 +284,7 @@
             {
               name: "完成时间",
               type: "line",
+              smooth: true,
               yAxisIndex: 1,
               data: [],
               markPoint: {
@@ -407,11 +425,13 @@
         })
         .then(() => {
            // 重新加载
+           this.currentPage = 1
            this.fetchRecords()
         })
         .catch(() => {
         });
       } else {
+        this.currentPage = 1
          this.fetchRecords()
       }
     },

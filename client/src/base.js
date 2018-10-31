@@ -19,7 +19,7 @@ yuchg.global = this // 大多情况为window
 /**
  * 判断变量是否定义
  */
-yuchg.isDef = function (val) {
+yuchg.isDef = function(val) {
   // void 0 始终等于 undefined
   return val !== void 0
 }
@@ -27,28 +27,28 @@ yuchg.isDef = function (val) {
 /**
  * 判断变量类型是否是字符串
  */
-yuchg.isString = function (val) {
+yuchg.isString = function(val) {
   return typeof val === 'string'
 }
 
 /**
  * 判断变量类型是否是布尔值
  */
-yuchg.isBoolean = function (val) {
+yuchg.isBoolean = function(val) {
   return typeof val === 'boolean'
 }
 
 /**
  * 判断变量类型是否是数值
  */
-yuchg.isNumber = function (val) {
+yuchg.isNumber = function(val) {
   return typeof val === 'number'
 }
 
 /**
  * 根据字符串名字获取对象
  */
-yuchg.getObjectByName = function (name, optObj) {
+yuchg.getObjectByName = function(name, optObj) {
   let parts = name.split('.')
   let cur = optObj || yuchg.global
   for (let i = 0; i < parts.length; i++) {
@@ -63,7 +63,7 @@ yuchg.getObjectByName = function (name, optObj) {
 /**
  * 打印错误日志（内部使用）
  */
-yuchg.logToConsole_ = function (msg) {
+yuchg.logToConsole_ = function(msg) {
   if (yuchg.global.console) {
     yuchg.global.console['error'](msg)
   }
@@ -72,20 +72,19 @@ yuchg.logToConsole_ = function (msg) {
 /**
  * 空函数
  */
-yuchg.nullFunction = function () {
-}
+yuchg.nullFunction = function() {}
 
 /**
  * 抽象方法占位函数
  */
-yuchg.abstractMethod = function () {
+yuchg.abstractMethod = function() {
   throw new Error('unimplemented abstract method')
 }
 
 /**
  * 改进typeof
  */
-yuchg.typeOf = function (value) {
+yuchg.typeOf = function(value) {
   let s = typeof value
   if (s === 'object') {
     if (value) {
@@ -95,14 +94,14 @@ yuchg.typeOf = function (value) {
         return s
       }
 
-      let className = Object.prototype.toString.call(/** @type {!Object} */(value))
+      let className = Object.prototype.toString.call( /** @type {!Object} */ (value))
       if (className === '[object Window]') {
         return 'object'
       }
 
       // 判断是否为数组类型
       if (className === '[object Array]' ||
-          (typeof value.length === 'number' &&
+        (typeof value.length === 'number' &&
           typeof value.splice !== 'undefined' &&
           typeof value.propertyIsEnumerable !== 'undefined' &&
           !value.propertyIsEnumerable('splice'))) {
@@ -112,8 +111,8 @@ yuchg.typeOf = function (value) {
       // 判断是否为函数类型
       if (className === '[object Function]' ||
         (typeof value.call !== 'undefined' &&
-        typeof value.propertyIsEnumerable !== 'undefined' &&
-        !value.propertyIsEnumerable('call'))) {
+          typeof value.propertyIsEnumerable !== 'undefined' &&
+          !value.propertyIsEnumerable('call'))) {
         return 'function'
       }
     } else {
@@ -128,28 +127,28 @@ yuchg.typeOf = function (value) {
 /**
  * 判断是否为空
  */
-yuchg.isNull = function (val) {
+yuchg.isNull = function(val) {
   return val == null
 }
 
 /**
  * 判断是否非空
  */
-yuchg.isDefAndNotNull = function (val) {
+yuchg.isDefAndNotNull = function(val) {
   return val != null
 }
 
 /**
  * 判断是否为数组
  */
-yuchg.isArray = function (val) {
+yuchg.isArray = function(val) {
   return yuchg.typeOf(val) === 'array'
 }
 
 /**
  * 判断是否为类数组
  */
-yuchg.isArrayLike = function (val) {
+yuchg.isArrayLike = function(val) {
   var type = yuchg.typeOf(val)
   return type === 'array' || (type === 'object' && typeof val.length === 'number')
 }
@@ -157,14 +156,14 @@ yuchg.isArrayLike = function (val) {
 /**
  * 判断是否为函数
  */
-yuchg.isFunction = function (val) {
+yuchg.isFunction = function(val) {
   return yuchg.typeOf(val) === 'function'
 }
 
 /**
  * 判断是否为对象
  */
-yuchg.isObject = function (val) {
+yuchg.isObject = function(val) {
   var type = typeof val
   return (type === 'object' && val != null) || type === 'function'
 }
@@ -172,7 +171,7 @@ yuchg.isObject = function (val) {
 /**
  * 克隆对象（深度递归）
  */
-yuchg.cloneObject = function (obj) {
+yuchg.cloneObject = function(obj) {
   var type = yuchg.typeOf(obj)
   if (type === 'object' || type === 'array') {
     if (obj.clone) {
@@ -190,10 +189,9 @@ yuchg.cloneObject = function (obj) {
 /**
  * 继承对象
  */
-yuchg.inherits = function (childCtor, parentCtor) {
+yuchg.inherits = function(childCtor, parentCtor) {
   /** @constructor */
-  function TempCtor () {
-  }
+  function TempCtor() {}
 
   TempCtor.prototype = parentCtor.prototype
   childCtor.superClass_ = parentCtor.prototype
@@ -201,7 +199,7 @@ yuchg.inherits = function (childCtor, parentCtor) {
   /** @override */
   childCtor.prototype.constructor = childCtor
 
-  childCtor.base = function (me, methodName, varArgs) {
+  childCtor.base = function(me, methodName, varArgs) {
     var args = new Array(arguments.length - 2)
     for (var i = 2; i < arguments.length; i++) {
       args[i - 2] = arguments[i]
@@ -213,7 +211,7 @@ yuchg.inherits = function (childCtor, parentCtor) {
 /**
  * 计算中英文字节长度, 中文算2个字节
  */
-yuchg.strByteLength = function (str) {
+yuchg.strByteLength = function(str) {
   var arr = str.match(/[^\x00-\xff]/ig)
   return str.length + (arr == null ? 0 : arr.length)
 }
@@ -255,16 +253,25 @@ yuchg.randomSort = function(a, b) {
 }
 
 // 随机ID
-yuchg.randomString = function(len) {  
-  　　len = len || 32;  
-  　　var $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';  
-  　　var maxPos = $chars.length;  
-  　　var pwd = '';  
-  　　for (var i = 0; i < len; i++) {  
-          //0~32的整数  
-  　　　　pwd += $chars.charAt(Math.floor(Math.random() * (maxPos+1)));  
-  　　}  
-  　　return pwd;  
-} 
+yuchg.randomString = function(len) {
+  len = len || 32;
+  var $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var maxPos = $chars.length;
+  var pwd = '';
+  for (var i = 0; i < len; i++) {
+    //0~32的整数  
+    pwd += $chars.charAt(Math.floor(Math.random() * (maxPos + 1)));
+  }
+  return pwd;
+}
+
+// 当前日期
+yuchg.currentTimeString = function() {
+  let date = new Date()
+  const year = date.getFullYear() //获取当前年份
+  const mon = date.getMonth() + 1 //获取当前月份
+  const da = date.getDate() //获取当前日
+  return year + '-' + mon + '-' + da
+}
 
 export default yuchg
