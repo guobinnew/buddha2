@@ -252,7 +252,7 @@ import ElContainer from "../node_modules/element-ui/packages/container/src/main"
 import logger from "./logger";
 import yuchg from "./base";
 import $ from "jquery";
-import CryptoJS from 'crypto-js'
+import ycUtils from './utils'
 logger.setLevel("debug");
 
 export default {
@@ -385,25 +385,22 @@ export default {
         this.$message("姓名不能为空");
         return;
       }
-      
-      const vm = this
-      $.ajax({
+
+      ycUtils.ajaxPost({
         url: "http://localhost:3000/api/updateProfile",
-        type: "POST",
-        data: vm.form,
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        data: this.form,
+        success: (data) => {
           if (data.result == 0) { // 成功
-            vm.$store.commit("updateUser", vm.form);
-            vm.$store.commit("updateSource", vm.form.source);
-            vm.updateProfile()
-            vm.profile.source = vm.$store.getters.source;
-            vm.dialogInfoVisible = false;
-            vm.$message("学生信息修改成功");
+            this.$store.commit("updateUser", this.form);
+            this.$store.commit("updateSource", this.form.source);
+            this.updateProfile()
+            this.profile.source = this.$store.getters.source;
+            this.dialogInfoVisible = false;
+            this.$message("学生信息修改成功");
             // 重新加载当前页面
-            vm.reload()
+            this.reload()
           } else {
-            vm.$message("学生信息修改失败: " + data.err);
+            this.$message("学生信息修改失败: " + data.err);
           }
         }
       });
@@ -418,24 +415,18 @@ export default {
       if (this.authForm.pwd === '') {
         return
       }
-
-      let vm = this
       // 提交验证请求
-      $.ajax({
+      ycUtils.ajaxPost({
         url: "http://localhost:3000/api/login",
-        type: "POST",
-        data: {
-          pwd: CryptoJS.SHA256(this.authForm.pwd).toString(CryptoJS.enc.Hex)
-        },
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        data: {pwd: CryptoJS.SHA256(this.authForm.pwd).toString(CryptoJS.enc.Hex)},
+        success: (data) => {
           if (data.result == 0) {
-            vm.dialogAuthVisible = false
-            vm.$nextTick(function () {
-              vm.$router.push({name:'score'});
+            this.dialogAuthVisible = false
+            this.$nextTick(function () {
+              this.$router.push({name:'score'});
             })
           } else {
-            vm.$message.error('身份验证失败 -' + data.err)
+            this.$message.error('身份验证失败 -' + data.err)
           }
         }
       });
@@ -447,18 +438,15 @@ export default {
   mounted: function() {
     this.showGradeName(this.activeGradeIndex);
     // 读取配置信息，初始化状态
-    let vm = this
-    $.ajax({
+    ycUtils.ajaxGet({
         url: "http://localhost:3000/api/manifest",
-        type: "GET",
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        success:  (data) => {
           if (data.result == 0) {
-            vm.$store.commit("updateManifest", data.data);
-            vm.updateProfile();
-            vm.updateFooter();
+            this.$store.commit("updateManifest", data.content);
+            this.updateProfile();
+            this.updateFooter();
           } else {
-            vm.$message.error('读取配置信息失败，请退出重试')
+            this.$message.error('读取配置信息失败，请退出重试')
           }
         }
     });

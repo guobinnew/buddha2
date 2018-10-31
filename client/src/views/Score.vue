@@ -6,7 +6,7 @@
                 <el-button type="primary" round @click="onClickReturn" class="buddha-return">返回</el-button>
             </el-card>
         </el-row>
-        <el-tabs tab-position="left" value="chart">
+        <el-tabs tab-position="left" value="chart" @tab-click="onClickTab">
             <el-tab-pane label="统计图表" name="chart">
                 <div id="buddha-chart-pie" v-resize="onChartPieResize"></div>
                 <div id="buddha-chart" v-resize="onChartResize"></div>
@@ -345,11 +345,59 @@
       onChartPieResize() {
         this.chart && this.chart.resize()
       },
+      onClickTab(tab) {
+        if (tab.name === 'chart' && this.modified) {
+          this.refreshChart()
+          this.modified = false
+        }
+      },
       onClickReturn() {
         this.$router.go(-1)
       },
       onAddRecord() {
+        if (this.form.number === 0) {
+          this.$message.error('积分值不能为0')
+          return
+        }
 
+        // 添加新记录, 按日期排序
+        const newRecord = yuchg.cloneObject(this.form)
+        if (!newRecord.date || newRecord.date === '') {
+          newRecord.date = new Date()
+        }
+
+        // 发送更新请求，请求成功后，更新本地数据
+        let vm = this
+        $.ajax({
+          url: this.updateUrl,
+          type: "POST",
+          data: {
+            type: 'add',
+            record: newRecord
+          },
+          dataType: "json", //指定服务器返回的数据类型
+          success:  (data) => {
+            if (data.result === 0) {
+              let inserted = false
+              const rec = data.record  // 返回的记录带ID
+              vm.scoreData.forEach((value, index) => {
+                let res = yuchg.dateCompare(value.date, rec.date)
+                if (res > 0) {
+                  vm.scoreData.splice(index, 0, rec)
+                  inserted = true
+                  return false
+                }
+              })
+              if (!inserted) {
+                vm.scoreData.push(rec)
+              }
+              vm.modified = true
+              this.$message('积分记录添加成功')
+            } else {
+              vm.$message.error('添加积分记录失败 -' + data.err)
+            }
+          }
+        });
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage;
@@ -357,6 +405,41 @@
       handleSizeChange(val) {
         this.pageSize = val
         this.currentPage = 1
+      },
+      handleEdit(index, value) {
+        this.$message('功能尚未实现')
+      },
+      handleDelete(index, value) {
+        let vm = this
+        // 删除所在行数据
+        const realIndex = (this.currentPage - 1) * this.pageSize + index
+        this.$confirm("确认删除该条记录(不可恢复）?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          // 发送删除请求
+          // 发送更新请求，请求成功后，更新本地数据
+          $.ajax({
+            url: this.updateUrl,
+            type: "POST",
+            data: {
+              type: 'delete',
+              record: value.id
+            },
+            dataType: "json", //指定服务器返回的数据类型
+            success: (data) => {
+              if (data.result === 0) {
+                vm.scoreData.splice(realIndex, 1)
+                vm.modified = true
+                this.$message('积分记录删除成功')
+              } else {
+                vm.$message.error('删除积分记录失败 -' + data.err)
+              }
+            }
+          });
+        }).catch(() => {
+        });
       },
       fetchRecords() {
         // 读取成绩
@@ -419,7 +502,6 @@
           })
         })
 
-        logger.warn(series)
         // 绘制图表
         this.chart.setOption({
           xAxis: {

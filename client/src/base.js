@@ -274,4 +274,16 @@ yuchg.currentTimeString = function() {
   return year + '-' + mon + '-' + da
 }
 
+// 日期比较
+yuchg.dateCompare = function(d1, d2) {
+  var od1 = new Date(d1);
+  var od2 = new Date(d2);
+  if (od1.getTime() > od2.getTime()) {
+    return 1
+  } else if (od1.getTime() < od2.getTime()) {
+    return -1
+  }
+  return 0
+}
+
 export default yuchg

@@ -140,7 +140,7 @@ import logger from "../../logger";
 import $ from "jquery";
 import yuchg from "../../base";
 import utils from "./utils";
-import CryptoJS from "crypto-js";
+import ycUtils from "../../utils";
 import saveAs from 'file-saver';
 
 export default {
@@ -238,14 +238,11 @@ export default {
       this.saveCurrent();
 
       logger.debug("saveCurrent", this.words);
-      let ciphertext = CryptoJS.AES.encrypt(
-        JSON.stringify(this.words),
-        "unique@buddha2"
-      );
+      let ciphertext = ycUtils.encodeJson(this.words)
       $.ajax({
         url: this.url,
         type: "POST",
-        data: { content: ciphertext.toString() },
+        data: { content: ciphertext },
         dataType: "json", //指定服务器返回的数据类型
         success: function(data) {
           if (data.result == 0) {
