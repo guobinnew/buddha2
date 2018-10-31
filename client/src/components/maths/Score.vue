@@ -3,7 +3,7 @@
         <el-tab-pane label="统计图表" name="chart">
             <div id="buddha-chart" v-resize="onChartResize"></div>
         </el-tab-pane>
-        <el-tab-pane label="成绩管理" name="manager">
+        <el-tab-pane label="记录管理" name="manager">
             <el-collapse accordion>
                 <el-collapse-item>
                     <template slot="title">
@@ -32,10 +32,10 @@
                             <el-input-number v-model="form.wrong" :step="1" :min="0" :max="100"></el-input-number>
                         </el-form-item>
                         <el-form-item label="用时">
-                            <el-input-number v-model="form.minute" :step="10" :min="0" :max="100"
+                            <el-input-number v-model="form.minute" :step="1" :min="0" :max="100"
                                              controls-position="right"></el-input-number>
                             <span class="buddha-tag">分钟</span>
-                            <el-input-number v-model="form.second" :step="1" :min="0" :max="100"
+                            <el-input-number v-model="form.second" :step="10" :min="0" :max="100"
                                              controls-position="right"></el-input-number>
                             <span class="buddha-tag">秒</span>
                         </el-form-item>
@@ -45,6 +45,10 @@
                     </el-form>
                 </el-collapse-item>
             </el-collapse>
+            <el-button-group>
+              <el-button type="primary" icon="el-icon-edit" @click="onClickSave">保存修改</el-button>
+              <el-button type="success" icon="el-icon-share" @click="onClickRefresh">重新加载</el-button>
+            </el-button-group>
             <el-table
                     border
                     ref="wordTable"
@@ -101,7 +105,7 @@
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
-                    :page-sizes="[10, 20, 50]"
+                    :page-sizes="[5, 10, 20, 50]"
                     :page-size="pageSize"
                     layout="prev, pager, next, sizes"
                     :total="scoreData.length">
@@ -168,6 +172,8 @@
   import yuchg from "../../base";
   import echarts from "echarts";
   import resize from 'vue-resize-directive'
+  import CryptoJS from "crypto-js";
+  import saveAs from "file-saver";
 
   export default {
     props: ["source"],
@@ -176,6 +182,7 @@
     },
     data: function () {
       return {
+        url: '',
         chart: null,
         form: {
           date: "",
@@ -187,8 +194,9 @@
         },
         currentModified: {},
         currentPage: 1,
-        pageSize: 10,
-        scoreData: []
+        pageSize: 5,
+        scoreData: [],
+        modified: false
       };
     },
     computed: {
@@ -282,11 +290,42 @@
       },
       onAddRecord() {
         // 添加新记录, 按日期排序
-       this.scoreData.forEach((value, index) => {
-         // 从头开始比较日期
+        const newRecord = {
+          date: this.form.date,
+          level: Number(this.form.level),
+          sum: this.form.number,
+          time: this.form.minute * 60 + this.form.second,
+          wrong: this.form.wrong
+        }
 
+        if (!newRecord.date || newRecord.date === '') {
+          newRecord.date = new Date()
+        }
 
-       })
+        let inserted = false
+        let newData = []
+        this.scoreData.forEach((value, index) => {
+          if (!inserted) {
+            let res = utils.dateCompare(value.date, newRecord.date)
+            if (res === 0) {
+              //  替换当前项
+              newData.push(newRecord)
+              inserted = true
+            } else if (res > 0) {
+              newData.push(newRecord, value)
+              inserted = true
+            } else {
+               newData.push(value)
+            }
+          } else {
+            newData.push(value)
+          }
+        })
+        if (!inserted) {
+          newData.push(newRecord)
+        }
+        this.modified = true
+        this.refreshChart(newData)
       },
       formatTime(time) {
         return utils.time2String(+time)
@@ -299,8 +338,7 @@
         this.currentPage = 1
       },
       refreshChart(data) {
-        this.scoreData = yuchg.cloneObject(data)
-
+        this.scoreData = data
         let chart_date = new Array(data.length)
         let chart_sum = new Array(data.length)
         let chart_wrong = new Array(data.length)
@@ -338,21 +376,64 @@
           ]
         })
       },
-      handleEdit(index, row) {
-        console.log(index, row);
-      },
       handleDelete(index, row) {
-        console.log(index, row);
+        // 删除所在行数据
+        const realIndex = this.currentPage * this.pageSize + index
+        this.$confirm("确认删除该条记录?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          // 发送删除请求
+            this.scoreData.splice(realIndex, 1)
+            this.modified = true
+            this.refreshChart()
+            this.$message("词语已清空");
+        }).catch(() => {
+        });
+      },
+      onClickRefresh() {
+        if (this.modified) {
+        // 有修改
+        this.$confirm("确认重新加载，放弃当前的修改?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+        .then(() => {
+           // 重新加载
+           this.fetchRecords()
+        })
+        .catch(() => {
+        });
+      } else {
+         this.fetchRecords()
       }
     },
-    mounted: function () {
-      this.form.date = utils.currentTimeString()
-      let $dom = $(this.$el);
-      this.chart = echarts.init($dom.find("#buddha-chart")[0]);
-      this.chart.setOption(this.chartOpt);
-
+    onClickSave() {
+      // 保存当前修改
+      let vm = this;
+      let ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(this.scoreData),
+        "unique@buddha2"
+      );
+      $.ajax({
+        url: this.url,
+        type: "POST",
+        data: { content: ciphertext.toString() },
+        dataType: "json", //指定服务器返回的数据类型
+        success: function(data) {
+          if (data.result == 0) {
+            // 成功
+            vm.$message("成绩记录保存成功")
+          } else {
+            vm.$message("成绩记录保存失败: " + data.err);
+          }
+        }
+      });
+    },
+    fetchRecords() {
       // 读取成绩
-      this.url = `http://localhost:3000/api/score/${this.source}/oral`
       let vm = this
       $.ajax({
         url:  this.url,
@@ -366,6 +447,16 @@
           }
         }
       });
+    }
+    },
+    mounted: function () {
+      this.url = `http://localhost:3000/api/score/${this.source}/oral`
+      this.form.date = utils.currentTimeString()
+      let $dom = $(this.$el);
+      this.chart = echarts.init($dom.find("#buddha-chart")[0]);
+      this.chart.setOption(this.chartOpt);
+      // 读取成绩
+      this.fetchRecords()
     },
     activated: function () {
     }

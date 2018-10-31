@@ -139,7 +139,12 @@ const utils = {
   dateCompare(d1, d2) {
     var od1 = new Date(d1);
     var od2 = new Date(d2);
-    return oDate1.getTime() > oDate2.getTime()
+    if (od1.getTime() > od2.getTime()) {
+      return 1
+    } else if (od1.getTime() < od2.getTime()) {
+      return -1
+    }
+    return 0
   },
 
   time2String(sec) {

@@ -107,6 +107,21 @@ router.get('/score/:grade/:type', function(req, res, next) {
   }
 })
 
+// 修改成绩表
+router.post('/score/:grade/:type', function(req, res, next) {
+  // 覆盖目标文件
+  var _path = path.join(scorepath, req.params.grade, req.params.type + '.json')
+  try {
+    var bytes  = CryptoJS.AES.decrypt(req.body.content.toString(), 'unique@buddha2');
+    var json = bytes.toString(CryptoJS.enc.Utf8);
+    fs.writeFileSync(_path, json)
+    res.json(errorCodes.OK)
+  } catch (err) {
+    logger.log('error','write file <' + _path + '> failed -' + err)
+    res.json(errorCodes.WRITE_DATAFILE_ERROR)
+  }
+})
+
 
 // 获取词汇表
 const dbpath = path.join(__dirname, 'data/db')

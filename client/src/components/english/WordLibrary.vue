@@ -22,10 +22,10 @@
             </el-aside>
             <el-main>
                 <el-button-group>
-                    <el-button type="primary" icon="el-icon-edit" @click="onClickAddRow">添加</el-button>
+                    <el-button type="primary" icon="el-icon-edit" @click="onClickAddRow">添加章节</el-button>
                     <el-button type="primary" icon="el-icon-edit" @click="onClickRefresh">重新加载</el-button>
-                    <el-button type="success" icon="el-icon-share" @click="onClickSave">保存</el-button>
-                    <el-button type="danger" icon="el-icon-delete" @click="onClickExport">导出</el-button>
+                    <el-button type="success" icon="el-icon-share" @click="onClickSave">保存修改</el-button>
+                    <el-button type="danger" icon="el-icon-delete" @click="onClickExport">导出到文件</el-button>
                 </el-button-group>
                 <el-table
                         ref="wordTable"
