@@ -8,6 +8,7 @@
         </el-row>
         <el-tabs tab-position="left" value="chart">
             <el-tab-pane label="统计图表" name="chart">
+                <div id="buddha-chart-pie" v-resize="onChartPieResize"></div>
                 <div id="buddha-chart" v-resize="onChartResize"></div>
             </el-tab-pane>
             <el-tab-pane label="积分管理" name="manager">
@@ -137,6 +138,13 @@
     #buddha-chart {
         width: 100%;
         height: 500px;
+        margin-top: 40px;
+    }
+
+    #buddha-chart-pie {
+        width: 100%;
+        height: 300px;
+        border-bottom: solid 1px #eee;
     }
 
     .buddha-score-title {
@@ -189,6 +197,7 @@
           update: 'update'
         },
         chart: null,
+        chartPie: null,
         currentPage: 1,
         pageSize: 10,
         scoreData: [],
@@ -222,15 +231,34 @@
         return this.urls.host + '/' + this.urls.update
       },
       chartOpt: function () {
+        let series = []
+        const legend = $.map(this.types, function (v, k) {
+          series.push({
+            id: k,
+            name: v,
+            type: "line",
+            stack: "总积分",
+            areaStyle: {},
+            data: []
+          })
+          return v
+        })
+
         let option = {
           title: {
             text: "积分累计趋势图"
           },
-          tooltip: {
-            trigger: "axis"
+          tooltip : {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              label: {
+                backgroundColor: '#6a7985'
+              }
+            }
           },
           legend: {
-            data: ["总积分"]
+            data: legend
           },
           grid: {
             left: '10%',
@@ -240,7 +268,6 @@
           toolbox: {
             show: true,
             feature: {
-              mark: {show: true},
               restore: {show: true},
               saveAsImage: {show: true}
             }
@@ -271,16 +298,39 @@
               }
             }
           ],
-          series: [
+          series: series
+        };
+        return option;
+      },
+      chartPieOpt: function () {
+        let option = {
+          title: {
+            text: '积分活动比例',
+            left: 'left'
+          },
+          tooltip : {
+            trigger: 'item',
+            formatter: "{b} : {c} ({d}%)"
+          },
+          legend: {
+            bottom: 10,
+            left: 'center',
+            data: []
+          },
+          series : [
             {
-              name: "总积分",
-              type: "line",
-              data: [],
-              markPoint: {
-                data: [
-                  {type: "max", name: "最大值"},
-                  {type: "min", name: "最小值"}
-                ]
+              name: 'score',
+              type: 'pie',
+              radius : '65%',
+              center: ['50%', '50%'],
+              selectedMode: 'single',
+              data:[],
+              itemStyle: {
+                emphasis: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
               }
             }
           ]
@@ -290,6 +340,9 @@
     },
     methods: {
       onChartResize() {
+        this.chart && this.chart.resize()
+      },
+      onChartPieResize() {
         this.chart && this.chart.resize()
       },
       onClickReturn() {
@@ -329,25 +382,60 @@
         }
 
         let chart_date = new Array(data.length)
-        let chart_sum = new Array(data.length)
-
-        // 遍历数据项
-        let sum = 0
-        data.forEach((value, index) => {
-          chart_date[index] = value.date
-          chart_sum[index] = sum + value.sum
+        // 按类型进行数据统计
+        const cateSum = {}
+        $.map(this.categories, function (v, k) {
+          cateSum[k] = {
+            value:0, name: v
+          }
         })
 
+        const sum = {}
+        const seriesData = {}
+        const series = $.map(this.types, function(v, k) {
+          sum[k] = 0
+          seriesData[k] = new Array(data.length)
+          return {
+            id: k,
+            name: v,
+            data: seriesData[k]
+          }
+        })
+
+        // 遍历数据项
+        data.forEach((value, index) => {
+          chart_date[index] = value.date
+
+          let v = Number(value.number)
+          if (value.category === '2') {
+            v = 0 - v
+          }
+          cateSum[value.category].value += value.number
+          sum[value.type] +=  v
+
+          logger.warn(value, sum, this.types)
+          $.map(this.types, (val, key) =>{
+            seriesData[key][index] = sum[key]
+          })
+        })
+
+        logger.warn(series)
         // 绘制图表
         this.chart.setOption({
           xAxis: {
             data: chart_date
           },
+          series: series
+        })
+
+        // 绘制图表
+        this.chartPie.setOption({
           series: [
             {
-              // 根据名字对应到相应的系列
-              name: '总积分',
-              data: chart_sum
+              name: 'score',
+              data: $.map(cateSum, function (v,k) {
+                return v
+              })
             }
           ]
         })
@@ -364,6 +452,8 @@
       let $dom = $(this.$el);
       this.chart = echarts.init($dom.find("#buddha-chart")[0]);
       this.chart.setOption(this.chartOpt);
+      this.chartPie = echarts.init($dom.find("#buddha-chart-pie")[0]);
+      this.chartPie.setOption(this.chartPieOpt);
       // 读取积分记录
       this.fetchRecords()
     }
