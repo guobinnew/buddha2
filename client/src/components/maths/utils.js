@@ -136,6 +136,28 @@ const utils = {
     return year + '-' + mon + '-' + da
   },
 
+  dateCompare(d1, d2) {
+    var od1 = new Date(d1);
+    var od2 = new Date(d2);
+    return oDate1.getTime() > oDate2.getTime()
+  },
+
+  time2String(sec) {
+    const s = sec % 60
+    let m = Math.floor(sec / 60)
+    let h = 0
+    let d = 0
+    if (m > 60) {
+      h =  Math.floor(m / 60)
+      m = m % 60
+    }
+    if (h > 24) {
+      d =  Math.floor(m / 24)
+      h = h % 60
+    }
+    return  (d ? d + ' 天' : '') + (h ? h + ' 小时' : '') + (m ? m + ' 分' : '') + (s ? s + ' 秒' : '')
+  },
+
   debounce: function(func, wait, immediate) {
     let timeout, args, context, timestamp, result
   

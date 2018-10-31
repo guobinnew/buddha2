@@ -35,7 +35,7 @@
 </style>
 
 <script>
-import Scratch from "../components/program/Scratch.vue";
+import Scratch from "../components/logic/Scratch.vue";
 import yuchg from "../base";
 import logger from "../logger";
 import $ from "jquery";

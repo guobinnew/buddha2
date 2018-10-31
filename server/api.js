@@ -81,8 +81,9 @@ router.post('/updateProfile', function(req, res, next) {
   }
 })
 
-// 积分管理
+
 const scorepath = path.join(__dirname, 'data/score')
+// 获取积分记录
 router.get('/score/record', function(req, res, next) {
   var _path = path.join(scorepath, 'score_vip.json')
   try {
@@ -93,6 +94,19 @@ router.get('/score/record', function(req, res, next) {
     res.json(errorCodes.READ_DATAFILE_ERROR)
   }
 })
+
+// 获取成绩表
+router.get('/score/:grade/:type', function(req, res, next) {
+  var _path = path.join(scorepath, req.params.grade, req.params.type + '.json')
+  try {
+    var json = readWordFileSync(_path)
+    res.json({result: 0, err: '', data: json})
+  } catch (err) {
+    logger.log('error','read file <' + _path + '> failed -' + err)
+    res.json(errorCodes.READ_DATAFILE_ERROR)
+  }
+})
+
 
 // 获取词汇表
 const dbpath = path.join(__dirname, 'data/db')
@@ -133,6 +147,7 @@ router.post('/partial/:source/:type/:grade/:section', function(req, res, next) {
 
   res.json(errorCodes.OK)
 })
+
 
 
 module.exports = router

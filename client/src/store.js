@@ -38,7 +38,7 @@ export default new Vuex.Store({
     source(state) {
       const src = state.database.sources
       if (src.items.length === 0) {
-        return ''
+        return 'rj'
       }
 
       let i = Number(src.current)

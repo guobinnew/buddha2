@@ -2,7 +2,6 @@
     <el-tabs tab-position="left" value="chart">
         <el-tab-pane label="统计图表" name="chart">
             <div id="buddha-chart" v-resize="onChartResize"></div>
-            <div id="buddha-chart-time"></div>
         </el-tab-pane>
         <el-tab-pane label="成绩管理" name="manager">
             <el-collapse accordion>
@@ -46,12 +45,6 @@
                     </el-form>
                 </el-collapse-item>
             </el-collapse>
-            <div style="text-align:left;">
-                <el-button-group>
-                    <el-button type="success" icon="el-icon-arrow-left">重新加载</el-button>
-                    <el-button type="danger">导出<i class="el-icon-arrow-right el-icon--right"></i></el-button>
-                </el-button-group>
-            </div>
             <el-table
                     border
                     ref="wordTable"
@@ -62,6 +55,7 @@
                 <el-table-column
                         prop="date"
                         label="日期"
+                        sortable
                         header-align="center"
                         width="180">
                 </el-table-column>
@@ -84,17 +78,22 @@
                         width="100">
                 </el-table-column>
                 <el-table-column
-                        prop="time"
                         header-align="center"
                         label="用时">
+                    <template slot-scope="scope">
+                        {{ formatTime(scope.row.time) }}
+                    </template>
                 </el-table-column>
                 <el-table-column
                         fixed="right"
                         header-align="center"
                         label="操作">
-                    <template slot-scope="scope">
-                        <el-button type="text" size="small">编辑</el-button>
-                    </template>
+                        <template slot-scope="scope">
+                            <el-button
+                                    size="mini"
+                                    type="danger"
+                                    @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                        </template>
                 </el-table-column>
             </el-table>
             <el-pagination
@@ -153,12 +152,7 @@
 
     #buddha-chart {
         width: 100%;
-        height: 400px;
-    }
-
-    #buddha-chart-time {
-        width: 100%;
-        height: 400px;
+        height: 500px;
     }
 
     .buddha-tag {
@@ -188,40 +182,32 @@
           number: 40,
           level: "2",
           wrong: 0,
-          minute: 0,
+          minute: 5,
           second: 0
         },
-        currentModified: [],
+        currentModified: {},
         currentPage: 1,
         pageSize: 10,
-        scoreData: [
-          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
-          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
-          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
-          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
-          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300}
-        ]
+        scoreData: []
       };
     },
     computed: {
       chartOpt: function () {
         let option = {
           title: {
-            text: "未来一周气温变化",
-            subtext: "纯属虚构"
+            text: "口算成绩趋势图"
           },
           tooltip: {
             trigger: "axis"
           },
           legend: {
-            data: ["最高气温", "最低气温"]
+            data: ["题目总数", "错误数目", "完成时间"]
           },
           toolbox: {
             show: true,
             feature: {
               mark: {show: true},
-              dataView: {show: true, readOnly: false},
-              magicType: {show: true, type: ["line", "bar"]},
+              dataView: {show: true, readOnly: true},
               restore: {show: true},
               saveAsImage: {show: true}
             }
@@ -231,22 +217,35 @@
             {
               type: "category",
               boundaryGap: false,
-              data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+              data: []
             }
           ],
           yAxis: [
             {
               type: "value",
+              name: '数目',
               axisLabel: {
-                formatter: "{value} °C"
+                formatter: "{value}"
+              }
+            },
+            {
+              type: "value",
+              name: "时间（秒）",
+              axisLabel: {
+                formatter: "{value}"
               }
             }
           ],
           series: [
             {
-              name: "最高气温",
+              name: "题目总数",
               type: "line",
-              data: [11, 11, 15, 13, 12, 13, 10],
+              data: [],
+            },
+            {
+              name: "错误数目",
+              type: "line",
+              data: [],
               markPoint: {
                 data: [
                   {type: "max", name: "最大值"},
@@ -258,11 +257,15 @@
               }
             },
             {
-              name: "最低气温",
+              name: "完成时间",
               type: "line",
-              data: [1, -2, 2, 5, 3, 2, 0],
+              yAxisIndex: 1,
+              data: [],
               markPoint: {
-                data: [{name: "周最低", value: -2, xAxis: 1, yAxis: -1.5}]
+                data: [
+                  {type: "max", name: "最大值"},
+                  {type: "min", name: "最小值"}
+                ]
               },
               markLine: {
                 data: [{type: "average", name: "平均值"}]
@@ -278,7 +281,15 @@
         this.chart && this.chart.resize()
       },
       onAddRecord() {
+        // 添加新记录, 按日期排序
+       this.scoreData.forEach((value, index) => {
+         // 从头开始比较日期
 
+
+       })
+      },
+      formatTime(time) {
+        return utils.time2String(+time)
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage;
@@ -286,17 +297,75 @@
       handleSizeChange(val) {
         this.pageSize = val
         this.currentPage = 1
+      },
+      refreshChart(data) {
+        this.scoreData = yuchg.cloneObject(data)
+
+        let chart_date = new Array(data.length)
+        let chart_sum = new Array(data.length)
+        let chart_wrong = new Array(data.length)
+        let chart_time = new Array(data.length)
+
+        // 遍历数据项
+        data.forEach( (value, index) => {
+          chart_date[index] = value.date
+          chart_sum[index] = value.sum
+          chart_wrong[index] = value.wrong
+          chart_time[index] = value.time
+        })
+
+        // 绘制图表
+        this.chart.setOption({
+          xAxis: {
+            data: chart_date
+          },
+          series: [
+            {
+              // 根据名字对应到相应的系列
+              name: '题目总数',
+              data: chart_sum
+            },
+            {
+              // 根据名字对应到相应的系列
+              name: '错误数目',
+              data: chart_wrong
+            },
+            {
+              // 根据名字对应到相应的系列
+              name: '完成时间',
+              data: chart_time
+            }
+          ]
+        })
+      },
+      handleEdit(index, row) {
+        console.log(index, row);
+      },
+      handleDelete(index, row) {
+        console.log(index, row);
       }
     },
     mounted: function () {
+      this.form.date = utils.currentTimeString()
       let $dom = $(this.$el);
       this.chart = echarts.init($dom.find("#buddha-chart")[0]);
       this.chart.setOption(this.chartOpt);
 
       // 读取成绩
-      $.getJSON("", "", function (data) {
-
-      })
+      this.url = `http://localhost:3000/api/score/${this.source}/oral`
+      let vm = this
+      $.ajax({
+        url:  this.url,
+        type: "GET",
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          if (data.result === 0) {
+            vm.refreshChart(data.data)
+          } else {
+            vm.$message.error('读取成绩表失败 -' + data.err)
+          }
+        }
+      });
     },
     activated: function () {
     }
