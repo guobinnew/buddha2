@@ -5,83 +5,108 @@
             <div id="buddha-chart-time"></div>
         </el-tab-pane>
         <el-tab-pane label="成绩管理" name="manager">
-          <el-collapse accordion>
-          <el-collapse-item>
-            <template slot="title">
-                添加成绩<i class="header-icon fa fa-plus-square"></i>
-            </template>
-            <el-form ref="form" :model="form" label-width="80px">
-                <el-form-item label="日期">
-                    <el-col :span="11">
-                       <el-date-picker type="date" placeholder="选择日期" format="yyyy 年 MM 月 dd 日"
-                                        value-format="yyyy-MM-dd" v-model="form.date"
-                                        style="width: 100%;">
-                      </el-date-picker>
-                    </el-col>
-                    <el-col class="line" :span="2">难度</el-col>
-                    <el-col :span="11">
-                     <el-radio-group v-model="form.level">
-                        <el-radio label="1">初级</el-radio>
-                        <el-radio label="2">中级</el-radio>
-                        <el-radio label="3">高级</el-radio>
-                    </el-radio-group>
-                    </el-col>
-                </el-form-item>
-                <el-form-item label="数目">
-                    <el-input-number v-model="form.number" :step="10" :min="0" :max="100"></el-input-number>
-                    <span class="buddha-tag">错误数目</span>
-                    <el-input-number v-model="form.wrong" :step="1" :min="0" :max="100"></el-input-number>
-                </el-form-item>
-                <el-form-item label="用时">
-                      <el-input-number v-model="form.minute" :step="10" :min="0" :max="100" controls-position="right"></el-input-number>
-                      <span class="buddha-tag">分钟</span>
-                      <el-input-number v-model="form.second" :step="1" :min="0" :max="100" controls-position="right"></el-input-number>
-                      <span class="buddha-tag">秒</span>
-                </el-form-item>
-                <el-form-item>
-                   <el-button type="primary" @click="onAddRecord">添加</el-button>
-                </el-form-item>
-            </el-form>
-            </el-collapse-item>
-        </el-collapse>
-        <div style="text-align:left;">
-          <el-button-group>
-            <el-button type="success" icon="el-icon-arrow-left">重新加载</el-button>
-            <el-button type="danger">导出<i class="el-icon-arrow-right el-icon--right"></i></el-button>
-          </el-button-group>
-        </div>
-         <el-table
-          border
-          ref="wordTable"
-          :data="scoreData.slice((currentPage-1) * pageSize, currentPage * pageSize)"
-          stripe
-          tooltip-effect="dark"
-          style="width: 100%">
-        <el-table-column
-           prop="date"
-           label="日期"
-            width="180">
-        </el-table-column>
-        <el-table-column
-         prop="name"
-          label="姓名"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          label="地址">
-        </el-table-column>
-        </el-table>
-        <el-pagination
-          background
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[10, 20, 50]"
-          :page-size="pageSize"
-          layout="prev, pager, next, sizes"
-          :total="scoreData.length">
-        </el-pagination>
+            <el-collapse accordion>
+                <el-collapse-item>
+                    <template slot="title">
+                        添加成绩<i class="header-icon fa fa-plus-square"></i>
+                    </template>
+                    <el-form ref="form" :model="form" label-width="80px">
+                        <el-form-item label="日期">
+                            <el-col :span="11">
+                                <el-date-picker type="date" placeholder="选择日期" format="yyyy 年 MM 月 dd 日"
+                                                value-format="yyyy-MM-dd" v-model="form.date"
+                                                style="width: 100%;">
+                                </el-date-picker>
+                            </el-col>
+                            <el-col class="line" :span="2">难度</el-col>
+                            <el-col :span="11">
+                                <el-radio-group v-model="form.level">
+                                    <el-radio label="1">初级</el-radio>
+                                    <el-radio label="2">中级</el-radio>
+                                    <el-radio label="3">高级</el-radio>
+                                </el-radio-group>
+                            </el-col>
+                        </el-form-item>
+                        <el-form-item label="数目">
+                            <el-input-number v-model="form.number" :step="10" :min="0" :max="100"></el-input-number>
+                            <span class="buddha-tag">错误数目</span>
+                            <el-input-number v-model="form.wrong" :step="1" :min="0" :max="100"></el-input-number>
+                        </el-form-item>
+                        <el-form-item label="用时">
+                            <el-input-number v-model="form.minute" :step="10" :min="0" :max="100"
+                                             controls-position="right"></el-input-number>
+                            <span class="buddha-tag">分钟</span>
+                            <el-input-number v-model="form.second" :step="1" :min="0" :max="100"
+                                             controls-position="right"></el-input-number>
+                            <span class="buddha-tag">秒</span>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="onAddRecord">添加</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-collapse-item>
+            </el-collapse>
+            <div style="text-align:left;">
+                <el-button-group>
+                    <el-button type="success" icon="el-icon-arrow-left">重新加载</el-button>
+                    <el-button type="danger">导出<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+                </el-button-group>
+            </div>
+            <el-table
+                    border
+                    ref="wordTable"
+                    :data="scoreData.slice((currentPage-1) * pageSize, currentPage * pageSize)"
+                    stripe
+                    tooltip-effect="dark"
+                    style="width: 100%">
+                <el-table-column
+                        prop="date"
+                        label="日期"
+                        header-align="center"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        prop="level"
+                        label="难度"
+                        header-align="center"
+                        width="60">
+                </el-table-column>
+                <el-table-column
+                        prop="sum"
+                        label="题目数目"
+                        header-align="center"
+                        width="100">
+                </el-table-column>
+                <el-table-column
+                        prop="wrong"
+                        label="错误数目"
+                        header-align="center"
+                        width="100">
+                </el-table-column>
+                <el-table-column
+                        prop="time"
+                        header-align="center"
+                        label="用时">
+                </el-table-column>
+                <el-table-column
+                        fixed="right"
+                        header-align="center"
+                        label="操作">
+                    <template slot-scope="scope">
+                        <el-button type="text" size="small">编辑</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination
+                    background
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-sizes="[10, 20, 50]"
+                    :page-size="pageSize"
+                    layout="prev, pager, next, sizes"
+                    :total="scoreData.length">
+            </el-pagination>
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -90,18 +115,19 @@
     .hidden {
         display: none;
     }
+
     .header-icon {
-      margin-left: 10px;
-      font-size: 1.33333333em;
-      line-height: .75em;
+        margin-left: 10px;
+        font-size: 1.33333333em;
+        line-height: .75em;
     }
 
     .el-tab-pane {
-      min-width: 800px;
+        min-width: 800px;
     }
 
     .el-collapse {
-      margin-bottom: 20px;
+        margin-bottom: 20px;
     }
 
     .el-form-item {
@@ -109,11 +135,11 @@
     }
 
     .el-button-group {
-      margin-bottom: 20px;
+        margin-bottom: 20px;
     }
 
     .el-pagination {
-      margin-top: 20px;
+        margin-top: 20px;
     }
 
     .line {
@@ -136,8 +162,8 @@
     }
 
     .buddha-tag {
-      margin-left: 10px;
-      margin-right: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
     }
 </style>
 
@@ -168,35 +194,13 @@
         currentModified: [],
         currentPage: 1,
         pageSize: 10,
-        scoreData: [{
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }]
+        scoreData: [
+          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
+          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
+          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
+          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300},
+          {"date":"2018-09-20","level":2,"sum":40,"wrong":3,"time":300}
+        ]
       };
     },
     computed: {
@@ -276,11 +280,11 @@
       onAddRecord() {
 
       },
-       handleCurrentChange: function(currentPage) {
+      handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage;
       },
       handleSizeChange(val) {
-       this.pageSize = val
+        this.pageSize = val
         this.currentPage = 1
       }
     },

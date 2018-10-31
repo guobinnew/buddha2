@@ -7,6 +7,7 @@ var logger = require('./logger.js').logger
 var path = require('path')
 var fs = require('fs')
 var CryptoJS = require('crypto-js')
+var settings = require('./setting')
 
 
 const emptyWords = {
@@ -15,9 +16,11 @@ const emptyWords = {
   extend:[]
 }
 const errorCodes = {
-  OK:  {result: 0,err: ''},
-  SOURCE_TYPE_ERROR: {result: 1,err: '教程类型错误'},
-  WRITE_DATAFILE_ERROR: {result: 100,err: '更新数据文件时发生错误'}
+  OK:  {result: 0, err: ''},
+  SOURCE_TYPE_ERROR: {result: 1, err: '教程类型错误'},
+  WRITE_DATAFILE_ERROR: {result: 100,err: '更新数据文件时发生错误'},
+  READ_DATAFILE_ERROR: {result: 101,err: '读取数据文件时发生错误'},
+  LOGIN_ERROR: {result: 1000, err: '密码不正确'}
 }
 
 // 同步读取文件
@@ -38,27 +41,22 @@ function readWordFileSync(path, create = true) {
   return content
 }
 
-function convertUTCDateToLocal(UTCDateString) {
-  if (!UTCDateString) {
-    return '-'
+// 身份验证
+router.post('/login', function(req, res, next) {
+  // 检查密码是否正确
+  if (req.body.pwd === settings.admin.password) {
+    res.json(errorCodes.OK)
+  } else {
+    res.json(errorCodes.LOGIN_ERROR)
   }
+})
 
-  function formatFunc(str) { //格式化显示
-    return str > 9 ? str : '0' + str
-  }
-  var date2 = new Date(UTCDateString)
-  var year = date2.getFullYear()
-  var mon = formatFunc(date2.getMonth() + 1)
-  var day = formatFunc(date2.getDate())
-  var dateStr = year + '-' + mon + '-' + day
-  return dateStr
-}
-
+// 获取manifest
 router.get('/manifest', function(req, res, next) {
   var _path = path.join(__dirname, 'data/manifest.json')
   var data = fs.readFileSync(_path)
   var json = JSON.parse(data)
-  res.json(json)
+  res.json({result: 0, err: '', data: json})
 })
 
 // 更新用户信息
@@ -83,12 +81,30 @@ router.post('/updateProfile', function(req, res, next) {
   }
 })
 
+// 积分管理
+const scorepath = path.join(__dirname, 'data/score')
+router.get('/score/record', function(req, res, next) {
+  var _path = path.join(scorepath, 'score_vip.json')
+  try {
+    var json = readWordFileSync(_path)
+    res.json({result: 0, err: '', data: json})
+  } catch (err) {
+    logger.log('error','read file <' + _path + '> failed -' + err)
+    res.json(errorCodes.READ_DATAFILE_ERROR)
+  }
+})
+
 // 获取词汇表
 const dbpath = path.join(__dirname, 'data/db')
 router.get('/whole/:source/:type/:grade', function(req, res, next) {
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
-  var json = readWordFileSync(_path)
-  res.json(json)
+  try {
+    var json = readWordFileSync(_path)
+    res.json({result: 0, err: '', data: json})
+  } catch (err) {
+    logger.log('error','read file <' + _path + '> failed -' + err)
+    res.json(errorCodes.READ_DATAFILE_ERROR)
+  }
 })
 
 // 更新词汇表

@@ -64,6 +64,7 @@
                       <i class="fa fa-user-circle-o fa-lg" style="margin-right: 15px; color: white;"><span id="buddha-username" style="margin-left: 8px; font-size: 16px;">{{ profile.name }}</span></i>
                       <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item command="student">学生信息</el-dropdown-item>
+                        <el-dropdown-item command="score">积分管理</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                 </el-header>
@@ -96,6 +97,17 @@
          <el-button type="primary" @click="modifyProfile">修 改</el-button>
         </div>
       </el-dialog>
+        <el-dialog title="身份确认" :visible.sync="dialogAuthVisible">
+            <el-form :model="authForm" label-width="100px">
+                <el-form-item label="管理员口令">
+                    <el-input v-model="authForm.pwd" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogAuthVisible = false">取 消</el-button>
+                <el-button type="primary" @click="onAuthUser">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -264,7 +276,11 @@ export default {
         class: 1,
         source: "rj"
       },
-      isRouterAlive: true
+      isRouterAlive: true,
+      dialogAuthVisible: false,
+      authForm: {
+        pwd: ''
+      }
     };
   },
   computed: {
@@ -276,14 +292,14 @@ export default {
     handleCourseSelect(key, keyPath) {
       // 根据课程和年级切换页面
       this.activeCourseIndex = key;
-      this.$router.push(this.getPage(key, this.activeGradeIndex));
+      this.$router.replace(this.getPage(key, this.activeGradeIndex));
       logger.debug(key, keyPath);
     },
     handleGradeSelect(key, keyPath) {
       this.showGradeName(key);
       // 根据课程和年级切换页面
       this.activeGradeIndex = key;
-      this.$router.push(this.getPage(this.activeCourseIndex, key));
+      this.$router.replace(this.getPage(this.activeCourseIndex, key));
       logger.debug(key, keyPath);
     },
     showGradeName(grade) {
@@ -358,6 +374,9 @@ export default {
         this.form.class = this.profile.class;
         this.form.source = this.profile.source;
         this.dialogInfoVisible = true;
+      } else {
+        this.authForm.pwd = ''
+        this.dialogAuthVisible = true
       }
     },
     modifyProfile() {
@@ -393,6 +412,26 @@ export default {
       this.$nextTick(function(){
         this.isRouterAlive = true
       })
+    },
+    onAuthUser() {
+      let vm = this
+      // 提交验证请求
+      $.ajax({
+        url: "http://localhost:3000/api/login",
+        type: "POST",
+        data: this.authForm,
+        dataType: "json", //指定服务器返回的数据类型
+        success: function (data) {
+          if (data.result == 0) {
+            vm.dialogAuthVisible = false
+            vm.$nextTick(function () {
+              vm.$router.push({name:'score'});
+            })
+          } else {
+            vm.$message.error('身份验证失败 -' + data.err)
+          }
+        }
+      });
     }
   },
   created: function() {
@@ -407,9 +446,13 @@ export default {
         type: "GET",
         dataType: "json", //指定服务器返回的数据类型
         success: function (data) {
-          vm.$store.commit("updateManifest", data);
-          vm.updateProfile();
-          vm.updateFooter();
+          if (data.result == 0) {
+            vm.$store.commit("updateManifest", data.data);
+            vm.updateProfile();
+            vm.updateFooter();
+          } else {
+            vm.$message.error('读取配置信息失败，请退出重试')
+          }
         }
     });
     this.$router.push(
