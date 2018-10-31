@@ -79,20 +79,20 @@
         <el-dialog title="添加词语" :visible.sync="dialogAddVisible">
             <p>中英文使用#分隔开，格式实例： english#英语</p>
             <el-tag
-                v-for="tag in addForm.words"
-                closable
-                :disable-transitions="false"
-                @close="handleNewTagClose(tag)">
-                 {{tag[0] + ' - ' + tag[1]}}
+                    v-for="tag in addForm.words"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleNewTagClose(tag)">
+                {{tag[0] + ' - ' + tag[1]}}
             </el-tag>
             <el-input
-              class="input-newtag"
-              v-if="addForm.inputVisible"
-              v-model="addForm.inputValue"
-              ref="saveTagInput"
-              size="small"
-              @keyup.enter.native="handleInputConfirm"
-              @blur="handleInputConfirm"
+                    class="input-newtag"
+                    v-if="addForm.inputVisible"
+                    v-model="addForm.inputValue"
+                    ref="saveTagInput"
+                    size="small"
+                    @keyup.enter.native="handleInputConfirm"
+                    @blur="handleInputConfirm"
             >
             </el-input>
             <el-button v-else class="buddha-newtag" size="small" @click="showInput">添加词语</el-button>
@@ -106,316 +106,340 @@
 </template>
 
 <style scoped>
-.hidden {
-  display: none;
-}
+    .hidden {
+        display: none;
+    }
 
-.el-tabs {
-  width: 100%;
-  height: 100%;
-}
+    .el-tabs {
+        width: 100%;
+        height: 100%;
+    }
 
-.el-main {
-  background-color: white;
-  line-height: 20px;
-}
+    .el-main {
+        background-color: white;
+        line-height: 20px;
+    }
 
-.el-table {
-  text-align: left;
-}
+    .el-table {
+        text-align: left;
+    }
 
-.el-tag {
-  margin-right: 10px;
-  margin-bottom: 4px;
-}
+    .el-tag {
+        margin-right: 10px;
+        margin-bottom: 4px;
+    }
 
-.buddha-newtag {
-  margin-left: 10px;
-  height: 32px;
-  line-height: 30px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
+    .buddha-newtag {
+        margin-left: 10px;
+        height: 32px;
+        line-height: 30px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 
-.input-newtag {
-  width: 90px;
-  margin-left: 10px;
-  vertical-align: bottom;
-}
+    .input-newtag {
+        width: 90px;
+        margin-left: 10px;
+        vertical-align: bottom;
+    }
 
-.el-pagination {
-  margin-top: 20px;
-  text-align: center;
-}
+    .el-pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
 </style>
 
 <script>
-import logger from "../../logger";
-import $ from "jquery";
-import yuchg from "../../base";
-import utils from "./utils";
-import CryptoJS from "crypto-js";
-import saveAs from "file-saver";
+  import logger from "../../logger";
+  import $ from "jquery";
+  import yuchg from "../../base";
+  import utils from "./utils";
+  import CryptoJS from "crypto-js";
+  import saveAs from "file-saver";
 
-export default {
-  props: ["url", "update"],
-  data: function() {
-    return {
-      activeSection: "first",
-      dialogAddVisible: false,
-      loaded: false,
-      words: {
-        first: [],
-        second: [],
-        extend: []
+  export default {
+    props: ["url", "update"],
+    data: function () {
+      return {
+        activeSection: "first",
+        dialogAddVisible: false,
+        loaded: false,
+        words: {
+          first: [],
+          second: [],
+          extend: []
+        },
+        currentData: [],
+        currentModified: [],
+        currentPage: 1,
+        pageSize: 5,
+        addForm: {
+          index: -1,
+          words: [],
+          inputVisible: false,
+          inputValue: ''
+        }
+      };
+    },
+    computed: {},
+    methods: {
+      handleClose(index, tag) {
+        const row = this.currentData[index - 1];
+        let idx = -1;
+        row.data.forEach(function (value, index) {
+          if (value[0] === tag[0]) {
+            idx = index;
+            return false;
+          }
+        });
+        row.data.splice(idx, 1);
+        this.setModifyFlag(index);
       },
-      currentData: [],
-      currentModified: [],
-      currentPage: 1,
-      pageSize: 5,
-      addForm: {
-        index: -1,
-        words: [],
-        inputVisible: false,
-        inputValue: ''
-      }
-    };
-  },
-  computed: {},
-  methods: {
-    handleClose(index, tag) {
-      const row = this.currentData[index - 1];
-      let idx = -1;
-      row.data.forEach(function(value, index) {
-        if (value[0] === tag[0]) {
-          idx = index;
-          return false;
-        }
-      });
-      row.data.splice(idx, 1);
-      this.setModifyFlag(index);
-    },
-    handleAdd(index) {
-      this.addForm.index = index;
-      this.dialogAddVisible = true;
-    },
-    handleClear(index) {
-      this.addForm.index = index;
-      this.$confirm("确认清空该行所有词语?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.currentData[index - 1].data = [];
-          this.setModifyFlag(index);
-          this.$message("词语已清空");
+      handleAdd(index) {
+        this.addForm.index = index;
+        this.dialogAddVisible = true;
+      },
+      handleClear(index) {
+        this.addForm.index = index;
+        this.$confirm("确认清空该课所有单词?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
         })
-        .catch(() => {});
-    },
-    handleReset(index) {
-      this.addForm.index = index;
-      this.$confirm("确认恢复该行所有词语?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.currentData[index - 1].data = this.words[this.activeSection][
+          .then(() => {
+            this.currentData[index - 1].data = [];
+            this.setModifyFlag(index);
+            this.$message("词语已清空");
+          })
+          .catch(() => {
+          });
+      },
+      handleReset(index) {
+        this.addForm.index = index;
+        this.$confirm("确认恢复该课所有单词?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+          .then(() => {
+            this.currentData[index - 1].data = this.words[this.activeSection][
             index - 1
-          ];
-          this.setModifyFlag(index, false)
-          this.$message("词语已恢复")
+              ];
+            this.setModifyFlag(index, false)
+            this.$message("单词已恢复")
+          })
+          .catch(() => {
+          })
+      },
+      handleNewTagClose(tag) {
+        let idx = -1
+        this.addForm.words.forEach(function (value, index) {
+          if (value[0] === tag[0]) {
+            idx = index
+            return false
+          }
         })
-        .catch(() => {})
-    },
-    handleNewTagClose(tag) {
-      let idx = -1
-      this.addForm.words.forEach(function(value, index) {
-        if (value[0] === tag[0]) {
-          idx = index
-          return false
-        }
-      })
-      this.addForm.words.splice(idx, 1)
-    },
-    showInput() {
-      this.addForm.inputVisible = true;
+        this.addForm.words.splice(idx, 1)
+      },
+      showInput() {
+        this.addForm.inputVisible = true;
         this.$nextTick(_ => {
           this.$refs.saveTagInput.$refs.input.focus();
         });
       },
-    handleInputConfirm() {
-      let inputValue = this.addForm.inputValue;
-      if (inputValue) {
-        // 分解
-        const newWords = yuchg.trimString(inputValue).split(/\s*#\s*/).filter(function(value){
-          return value.length > 0
-        })
-        if (newWords.length !== 2) {
-          this.$message('输入格式有误')
-          return
-        }
-        this.addForm.words.push(newWords)
-      }
-      this.addForm.inputVisible = false;
-      this.addForm.inputValue = '';
-    },
-    onClickAddRow() {
-      let index = this.currentData.length + 1;
-      this.currentData.push({
-        id: index,
-        data: []
-      });
-      this.setModifyFlag(index);
-    },
-    onClickRefresh() {
-      if (this.currentModified.length > 0) {
-        // 有修改
-        this.$confirm("确认重新加载单词表，放弃当前的修改?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-          .then(() => {
-            this.fetchWords();
+      handleInputConfirm() {
+        let inputValue = this.addForm.inputValue;
+        if (inputValue) {
+          // 分解
+          const newWords = yuchg.trimString(inputValue).split(/\s*#\s*/).filter(function (value) {
+            return value.length > 0
           })
-          .catch(() => {});
-      } else {
-        this.fetchWords();
-      }
-    },
-    onClickSave() {
-      // 保存当前修改
-      let vm = this;
-      this.saveCurrent();
+          if (newWords.length !== 2) {
+            this.$message('输入格式有误')
+            return
+          }
+          // 检查重复
+          let found = false
+          this.addForm.words.forEach((value) => {
+            if (value[0] === newWords[0]) {
+              found = true
+              return false
+            }
+          })
 
-      logger.debug("saveCurrent", this.words);
-      let ciphertext = CryptoJS.AES.encrypt(
-        JSON.stringify(this.words),
-        "unique@buddha2"
-      );
-      $.ajax({
-        url: this.url,
-        type: "POST",
-        data: { content: ciphertext.toString() },
-        dataType: "json", //指定服务器返回的数据类型
-        success: function(data) {
-          if (data.result == 0) {
-            // 成功
-            // 通知父组件更新
-            vm.$emit("update", vm.words);
-            vm.$message("词语表保存成功");
+          if (found) {
+            this.$message('该单词已经存在')
           } else {
-            vm.$message("词语表保存失败: " + data.err);
+            this.addForm.words.push(newWords)
           }
         }
-      });
-    },
-    onClickExport() {
-      let str = JSON.stringify(this.words);
-      var file = new File([str], "word" + yuchg.randomString(8) + ".json", {
-        type: "text/plain;charset=utf-8"
-      });
-      saveAs(file);
-    },
-    onAddWords() {
-      if (this.addForm.words.length === 0) {
-        this.$message("请先输入词语");
-        return;
-      }
-      if (this.addForm.index >= 1) {
-        const src = this.currentData[this.addForm.index - 1];
-        src.data.push.apply(src.data, this.addForm.words);
-        this.addForm.words = []
-        this.setModifyFlag(this.addForm.index);
-        this.$message("词语添加成功");
-      } else {
-        this.$message("词语添加失败");
-      }
-      this.dialogAddVisible = false;
-    },
-    saveCurrent() {
-      this.words[this.activeSection] = this.currentData.map(function(
-        value,
-        index
-      ) {
-        return value.data;
-      });
-      this.clearModifyFlag();
-    },
-    handleSectionSelect(key, keyPath) {
-      if (this.currentModified.length > 0) {
-        // 有修改
-        this.$confirm("是否保存当前的修改?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-          .then(() => {
-            this.saveCurrent();
-            this.$message("词语已保存");
-            this.loadWords(key);
+        this.addForm.inputVisible = false;
+        this.addForm.inputValue = '';
+      },
+      onClickAddRow() {
+        let index = this.currentData.length + 1;
+        this.currentData.push({
+          id: index,
+          data: []
+        });
+        this.setModifyFlag(index);
+      },
+      onClickRefresh() {
+        if (this.currentModified.length > 0) {
+          // 有修改
+          this.$confirm("确认重新加载单词表，放弃当前的修改?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
           })
-          .catch(() => {
-            this.loadWords(key);
-          });
-      } else {
-        this.loadWords(key);
-      }
-    },
-    handleCurrentChange: function(currentPage) {
-      this.currentPage = currentPage;
-    },
-    handleSizeChange(val) {
-      this.pageSize = val;
-      this.currentPage = 1;
-    },
-    loadWords(sec) {
-      this.activeSection = sec;
-      this.currentData = this.words[this.activeSection].map(function(
-        value,
-        index
-      ) {
-        return { id: index + 1, data: [].concat(value) };
-      });
-      this.currentModified = [];
-    },
-    setModifyFlag(index, flag = true) {
-      if (flag) {
-        if (this.currentModified.indexOf(index) < 0) {
-          this.currentModified.push(index);
+            .then(() => {
+              this.fetchWords();
+            })
+            .catch(() => {
+            });
+        } else {
+          this.fetchWords();
         }
-      } else {
-        this.currentModified.splice(this.currentModified.indexOf(index), 1);
-      }
-    },
-    clearModifyFlag() {
-      this.currentModified = [];
-    },
-    fetchWords() {
-      if (this.url === "" || this.loaded) {
-        return;
-      }
-      let vm = this;
-      $.ajax({
-        url: this.url,
-        type: "GET",
-        dataType: "json", //指定服务器返回的数据类型
-        success: function(data) {
-          vm.words.first = data.first;
-          vm.words.second = data.second;
-          vm.words.extend = data.extend;
-          vm.loadWords(vm.activeSection);
+      },
+      onClickSave() {
+        // 保存当前修改
+        let vm = this;
+        this.saveCurrent();
+
+        logger.debug("saveCurrent", this.words);
+        let ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(this.words),
+          "unique@buddha2"
+        );
+        $.ajax({
+          url: this.url,
+          type: "POST",
+          data: {content: ciphertext.toString()},
+          dataType: "json", //指定服务器返回的数据类型
+          success: function (data) {
+            if (data.result == 0) {
+              // 成功
+              // 通知父组件更新
+              vm.$emit("update", vm.words);
+              vm.$message("单词表保存成功");
+            } else {
+              vm.$message("单词表保存失败: " + data.err);
+            }
+          }
+        });
+      },
+      onClickExport() {
+        let str = JSON.stringify(this.words);
+        var file = new File([str], "word" + yuchg.randomString(8) + ".json", {
+          type: "text/plain;charset=utf-8"
+        });
+        saveAs(file);
+      },
+      onAddWords() {
+        if (this.addForm.words.length === 0) {
+          this.$message("请先输入单词")
+          return;
         }
-      });
+        if (this.addForm.index >= 1) {
+          const src = this.currentData[this.addForm.index - 1]
+          // 如果存在则替换
+          let keys = src.data.map(function (value) {
+              return value[0];
+          })
+          this.addForm.words.forEach(function (v) {
+            let i = keys.indexOf(v[0])
+            if (i < 0) {
+              src.data.push(v)
+            } else {
+              src.data[i][1] = v[1]
+            }
+          })
+          this.setModifyFlag(this.addForm.index)
+          this.$message("单词添加成功")
+        } else {
+          this.$message("单词添加失败")
+        }
+        this.dialogAddVisible = false
+        this.addForm.words = []
+      },
+      saveCurrent() {
+        this.words[this.activeSection] = this.currentData.map(function (value,
+                                                                        index) {
+          return value.data;
+        });
+        this.clearModifyFlag();
+      },
+      handleSectionSelect(key, keyPath) {
+        if (this.currentModified.length > 0) {
+          // 有修改
+          this.$confirm("是否保存当前的修改?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          })
+            .then(() => {
+              this.saveCurrent();
+              this.$message("单词已保存");
+              this.loadWords(key);
+            })
+            .catch(() => {
+              this.loadWords(key);
+            });
+        } else {
+          this.loadWords(key);
+        }
+      },
+      handleCurrentChange: function (currentPage) {
+        this.currentPage = currentPage;
+      },
+      handleSizeChange(val) {
+        this.pageSize = val;
+        this.currentPage = 1;
+      },
+      loadWords(sec) {
+        this.activeSection = sec;
+        this.currentData = this.words[this.activeSection].map(function (value, index) {
+          return {id: index + 1, data: [].concat(yuchg.cloneObject(value))};
+        })
+        this.currentModified = [];
+      },
+      setModifyFlag(index, flag = true) {
+        if (flag) {
+          if (this.currentModified.indexOf(index) < 0) {
+            this.currentModified.push(index);
+          }
+        } else {
+          this.currentModified.splice(this.currentModified.indexOf(index), 1);
+        }
+      },
+      clearModifyFlag() {
+        this.currentModified = [];
+      },
+      fetchWords() {
+        if (this.url === "" || this.loaded) {
+          return;
+        }
+        let vm = this;
+        $.ajax({
+          url: this.url,
+          type: "GET",
+          dataType: "json", //指定服务器返回的数据类型
+          success: function (data) {
+            vm.words.first = data.first;
+            vm.words.second = data.second;
+            vm.words.extend = data.extend;
+            vm.loadWords(vm.activeSection);
+          }
+        });
+      }
+    },
+    created: function () {
+    },
+    mounted: function () {
+      this.fetchWords();
+    },
+    activated: function () {
     }
-  },
-  created: function() {},
-  mounted: function() {
-    this.fetchWords();
-  },
-  activated: function() {}
-};
+  };
 </script>
 

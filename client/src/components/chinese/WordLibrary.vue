@@ -276,7 +276,14 @@ export default {
         const newWords = this.addForm.words.split(/\s+/).filter(function(value){
           return value.length > 0
         });
-        src.data.push.apply(src.data, newWords);
+
+        // 如果存在则跳过
+        newWords.forEach(function (v) {
+          if (src.data.indexOf(v) < 0) {
+            src.data.push(v)
+          }
+        })
+
         this.addForm.words = ''
         this.setModifyFlag(this.addForm.index);
         this.$message("词语添加成功");
