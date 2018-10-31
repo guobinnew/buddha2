@@ -326,6 +326,7 @@
         }
         this.modified = true
         this.refreshChart(newData)
+        this.$message('记录添加成功')
       },
       formatTime(time) {
         return utils.time2String(+time)
@@ -338,7 +339,10 @@
         this.currentPage = 1
       },
       refreshChart(data) {
-        this.scoreData = data
+        if (data) {
+          this.scoreData = data
+        }
+   
         let chart_date = new Array(data.length)
         let chart_sum = new Array(data.length)
         let chart_wrong = new Array(data.length)
@@ -378,17 +382,18 @@
       },
       handleDelete(index, row) {
         // 删除所在行数据
-        const realIndex = this.currentPage * this.pageSize + index
+        const realIndex = (this.currentPage - 1) * this.pageSize + index
         this.$confirm("确认删除该条记录?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         }).then(() => {
           // 发送删除请求
+          logger.warn(this.scoreData, realIndex, index)
             this.scoreData.splice(realIndex, 1)
             this.modified = true
             this.refreshChart()
-            this.$message("词语已清空");
+            this.$message("记录已成功删除");
         }).catch(() => {
         });
       },
