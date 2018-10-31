@@ -170,6 +170,7 @@
   import utils from "./utils";
   import $ from "jquery";
   import yuchg from "../../base";
+  import ycUtils from '../../utils'
   import echarts from "echarts";
   import resize from 'vue-resize-directive'
   import CryptoJS from "crypto-js";
@@ -438,16 +439,10 @@
     onClickSave() {
       // 保存当前修改
       let vm = this;
-      let ciphertext = CryptoJS.AES.encrypt(
-        JSON.stringify(this.scoreData),
-        "unique@buddha2"
-      );
-      $.ajax({
+      ycUtils.ajaxPost({
         url: this.url,
-        type: "POST",
-        data: { content: ciphertext.toString() },
-        dataType: "json", //指定服务器返回的数据类型
-        success: function(data) {
+        data: this.scoreData,
+        success: (data) => {
           if (data.result == 0) {
             // 成功
             vm.$message("成绩记录保存成功")
@@ -460,13 +455,12 @@
     fetchRecords() {
       // 读取成绩
       let vm = this
-      $.ajax({
+      ycUtils.ajaxGet({
         url:  this.url,
-        type: "GET",
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        success:  (data) => {
           if (data.result === 0) {
-            vm.refreshChart(data.data)
+            logger.warn(data)
+            vm.refreshChart(data.content)
           } else {
             vm.$message.error('读取成绩表失败 -' + data.err)
           }

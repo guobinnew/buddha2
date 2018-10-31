@@ -418,7 +418,7 @@ export default {
       // 提交验证请求
       ycUtils.ajaxPost({
         url: "http://localhost:3000/api/login",
-        data: {pwd: CryptoJS.SHA256(this.authForm.pwd).toString(CryptoJS.enc.Hex)},
+        data: {pwd: ycUtils.sha256(this.authForm.pwd)},
         success: (data) => {
           if (data.result == 0) {
             this.dialogAuthVisible = false

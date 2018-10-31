@@ -95,6 +95,7 @@ import Word from "../../components/english/Word.vue";
 import WordLibrary from "../../components/english/WordLibrary.vue";
 import $ from "jquery";
 import yuchg from '../../base'
+import ycUtils from '../../utils'
 import logger from '../../logger'
 
 
@@ -175,16 +176,13 @@ export default {
     // 读取单词表
     let source = this.$store.getters.source
     this.url = `http://localhost:3000/api/whole/${source}/glossary/g3`
-    let vm = this
-    $.ajax({
+    ycUtils.ajaxGet({
         url: this.url,
-        type: "GET",
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        success: (data) => {
           if (data.result === 0) {
-            vm.updateWords(data.data)
+            this.updateWords(data.content)
           } else {
-            vm.$message.error('读取单词表失败 -' + data.err)
+            this.$message.error('读取单词表失败 -' + data.err)
           }
         }
     });

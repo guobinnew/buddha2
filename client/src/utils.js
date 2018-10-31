@@ -5,12 +5,15 @@ import $ from "jquery";
 
 const cryptoSecret = "unique@buddha2"
 const utils = {
+  sha256: function(text) {
+    return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex)
+  },
   encodeJson: function(json) {
     let ciphertext = CryptoJS.AES.encrypt(
       JSON.stringify(json),
       cryptoSecret
     );
-    return ciphertext.toString()
+    return ciphertext.toString();
   },
   decodeJson: function(code) {
     let bytes  = CryptoJS.AES.decrypt(code, cryptoSecret);
@@ -21,16 +24,19 @@ const utils = {
     $.ajax({
       url: option.url,
       type: "POST",
-      data: utils.encodeJson(option.data),
-      dataType: "json", //指定服务器返回的数据类型
-      success: option.success
+      data: {data: utils.encodeJson(option.data)},
+      dataType: "text", //指定服务器返回的数据类型
+      success: function(data) {
+        let json = utils.decodeJson(data)
+        option.success(json)
+      }
     });
   },
   ajaxGet: function (option) {
     $.ajax({
       url: option.url,
       type: "GET",
-      dataType: "json", //指定服务器返回的数据类型
+      dataType: "text", //指定服务器返回的数据类型
       success: function(data) {
         let json = utils.decodeJson(data)
         option.success(json)

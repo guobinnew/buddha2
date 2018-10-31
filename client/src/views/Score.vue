@@ -180,6 +180,7 @@
   import logger from "../logger";
   import $ from "jquery";
   import yuchg from "../base";
+  import ycUtils from '../utils'
   import echarts from "echarts";
   import resize from 'vue-resize-directive'
   import CryptoJS from "crypto-js";
@@ -368,14 +369,9 @@
 
         // 发送更新请求，请求成功后，更新本地数据
         let vm = this
-        $.ajax({
+        ycUtils.ajaxPost({
           url: this.updateUrl,
-          type: "POST",
-          data: {
-            type: 'add',
-            record: newRecord
-          },
-          dataType: "json", //指定服务器返回的数据类型
+          data: {type: 'add',record: newRecord},
           success:  (data) => {
             if (data.result === 0) {
               let inserted = false
@@ -392,7 +388,7 @@
                 vm.scoreData.push(rec)
               }
               vm.modified = true
-              this.$message('积分记录添加成功')
+              vm.$message('积分记录添加成功')
             } else {
               vm.$message.error('添加积分记录失败 -' + data.err)
             }
@@ -420,14 +416,12 @@
         }).then(() => {
           // 发送删除请求
           // 发送更新请求，请求成功后，更新本地数据
-          $.ajax({
+          ycUtils.ajaxPost({
             url: this.updateUrl,
-            type: "POST",
             data: {
               type: 'delete',
               record: value.id
             },
-            dataType: "json", //指定服务器返回的数据类型
             success: (data) => {
               if (data.result === 0) {
                 vm.scoreData.splice(realIndex, 1)
@@ -443,18 +437,14 @@
       },
       fetchRecords() {
         // 读取成绩
-        let vm = this
-        $.ajax({
+        ycUtils.ajaxGet({
           url: this.queryUrl,
-          type: "GET",
-          dataType: "json", //指定服务器返回的数据类型
-          success: function (data) {
+          success: (data) => {
             if (data.result === 0) {
-              logger.warn(data)
-              vm.scoreSum = data.data.score
-              vm.refreshChart(data.data.records)
+              this.scoreSum = data.content.score
+              this.refreshChart(data.content.records)
             } else {
-              vm.$message.error('读取积分记录失败 -' + data.err)
+              this.$message.error('读取积分记录失败 -' + data.err)
             }
           }
         });

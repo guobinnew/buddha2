@@ -101,6 +101,7 @@
   import WordLibrary from "../../components/chinese/WordLibrary.vue";
   import $ from "jquery";
   import yuchg from '../../base'
+  import ycUtils from '../../utils'
   import logger from '../../logger'
 
 
@@ -184,16 +185,14 @@
       // 读取单词表
       let source = this.$store.getters.source
       this.url = `http://localhost:3000/api/whole/${source}/words/g3`
-      let vm = this
-      $.ajax({
+
+      ycUtils.ajaxGet({
         url:  this.url,
-        type: "GET",
-        dataType: "json", //指定服务器返回的数据类型
-        success: function (data) {
+        success: (data) => {
           if (data.result === 0) {
-            vm.updateWords(data.data)
+            this.updateWords(data.content)
           } else {
-            vm.$message.error('读取词汇表失败 -' + data.err)
+            this.$message.error('读取词汇表失败 -' + data.err)
           }
         }
       });  

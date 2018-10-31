@@ -303,24 +303,21 @@
       },
       onClickSave() {
         // 保存当前修改
-        let vm = this;
         this.saveCurrent();
 
         logger.debug("saveCurrent", this.words);
         let ciphertext = ycUtils.encodeJson(this.words)
-        $.ajax({
+        ycUtils.ajaxPost({
           url: this.url,
-          type: "POST",
-          data: {content: ciphertext},
-          dataType: "json", //指定服务器返回的数据类型
-          success: function (data) {
+          data: this.words,
+          success: (data) => {
             if (data.result == 0) {
               // 成功
               // 通知父组件更新
-              vm.$emit("update", vm.words);
-              vm.$message("单词表保存成功");
+              this.$emit("update", this.words);
+              this.$message("单词表保存成功");
             } else {
-              vm.$message("单词表保存失败: " + data.err);
+              this.$message("单词表保存失败: " + data.err);
             }
           }
         });
@@ -360,8 +357,7 @@
         this.addForm.words = []
       },
       saveCurrent() {
-        this.words[this.activeSection] = this.currentData.map(function (value,
-                                                                        index) {
+        this.words[this.activeSection] = this.currentData.map(function (value,index) {
           return value.data;
         });
         this.clearModifyFlag();
@@ -416,17 +412,14 @@
         if (this.url === "" || this.loaded) {
           return;
         }
-        let vm = this;
-        $.ajax({
+        ycUtils.ajaxGet({
           url: this.url,
-          type: "GET",
-          dataType: "json", //指定服务器返回的数据类型
-          success: function (data) {
+          success:  (data) => {
             if (data.result === 0) {
-              vm.words = yuchg.cloneObject(data.data)
-              vm.loadWords(vm.activeSection);
+              this.words = yuchg.cloneObject(data.content)
+              this.loadWords(this.activeSection);
             } else {
-              vm.$message.error('读取词汇表失败 -' + data.err)
+              this.$message.error('读取词汇表失败 -' + data.err)
             }
           }
         });

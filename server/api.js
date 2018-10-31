@@ -30,6 +30,15 @@ function encodeJson(json) {
   return cipher.toString()
 }
 
+// 发送结果
+function sendJson(res, data, crypto = true) {
+  if (crypto) {
+    res.send(encodeJson(data))
+  } else {
+    res.json(data)
+  }
+}
+
 var emptyRecords = {
   "score": 0,
   "records": []
@@ -40,6 +49,7 @@ var errorCodes = {
   SOURCE_TYPE_ERROR: {result: 1, err: '教程类型错误'},
   WRITE_DATAFILE_ERROR: {result: 100, err: '更新数据文件时发生错误'},
   READ_DATAFILE_ERROR: {result: 101, err: '读取数据文件时发生错误'},
+  UNKNOWN_OPERATION_ERROR: {result: 102, err: '未知的操作'},
   LOGIN_ERROR: {result: 1000, err: '密码不正确'}
 }
 
@@ -62,28 +72,28 @@ function readDBFileSync(path, emptyContent, create = true) {
 }
 
 router.post('*', function (req, res, next) {
-  if (isString(req.body)) {
-    req.body.content = JSON.parse(decodeJson(req.body))
-    next()
+  if (isString(req.body.data)) {
+    req.body.content = JSON.parse(decodeJson(decodeURIComponent(req.body.data)))
+    console.log('content ====', req.body.content)
   }
+  next()
 })
 
 // 身份验证
 router.post('/login', function (req, res, next) {
   // 检查密码是否正确
   if (req.body.content.pwd === settings.admin.password) {
-    res.json(errorCodes.OK)
+    sendJson(res, errorCodes.OK)
   } else {
-    res.json(errorCodes.LOGIN_ERROR)
+    sendJson(res, errorCodes.LOGIN_ERROR)
   }
 })
 
 // 获取manifest
 router.get('/manifest', function (req, res, next) {
   var _path = path.join(__dirname, 'data/manifest.json')
-  var data = readDBFileSync(_path, {})
-  var json = JSON.parse(data)
-  res.json({result: 0, err: '', content: encodeJson(json)})
+  var json = readDBFileSync(_path, {})
+  sendJson(res, {result: 0, err: '', content: json})
 })
 
 // 更新用户信息
@@ -103,10 +113,10 @@ router.post('/updateProfile', function (req, res, next) {
     }).indexOf(json.source)
 
     if (src.current < 0) {
-      res.json(errorCodes.SOURCE_TYPE_ERROR)
+      sendJson(res, errorCodes.SOURCE_TYPE_ERROR)
     } else {
       fs.writeFileSync(_path, JSON.stringify(manifest))
-      res.json(errorCodes.OK)
+      sendJson(res, errorCodes.OK)
     }
   } catch (err) {
 
@@ -120,10 +130,10 @@ router.get('/score/record', function (req, res, next) {
   var _path = path.join(scorepath, 'score_vip.json')
   try {
     var json = readDBFileSync(_path, emptyRecords)
-    res.json({result: 0, err: '', content: encodeJson(json)})
+    sendJson(res, {result: 0, err: '', content: json})
   } catch (err) {
     logger.log('error', 'read file <' + _path + '> failed -' + err)
-    res.json(errorCodes.READ_DATAFILE_ERROR)
+    sendJson(res, errorCodes.READ_DATAFILE_ERROR)
   }
 })
 
@@ -133,15 +143,20 @@ router.post('/score/update', function (req, res, next) {
   try {
     var json = readDBFileSync(_path, emptyRecords)
     // 解码数据
-    if (req.body.type === 'add') {
+    var json = req.body.content
+    if (json.type === 'add') { // 添加积分记录
 
+      sendJson(res, {result: 0, err: '', data: json})
+    } else if (json.type === 'delete') { // 删除积分记录
+      sendJson(res, errorCodes.OK)
+    } else if (json.type === 'update') { // 删除积分记录
+      sendJson(res, errorCodes.OK)
+    } else {
+      sendJson(res, errorCodes.UNKNOWN_OPERATION_ERROR)
     }
-
-
-    res.json({result: 0, err: '', data: json})
   } catch (err) {
     logger.log('error', 'read file <' + _path + '> failed -' + err)
-    res.json(errorCodes.READ_DATAFILE_ERROR)
+    sendJson(res, errorCodes.READ_DATAFILE_ERROR)
   }
 })
 
@@ -151,10 +166,10 @@ router.get('/score/:grade/:type', function (req, res, next) {
   var _path = path.join(scorepath, req.params.grade, req.params.type + '.json')
   try {
     var json = readDBFileSync(_path, [])
-    res.json({result: 0, err: '', data: json})
+    sendJson(res, {result: 0, err: '', content: json})
   } catch (err) {
     logger.log('error', 'read file <' + _path + '> failed -' + err)
-    res.json(errorCodes.READ_DATAFILE_ERROR)
+    sendJson(res, errorCodes.READ_DATAFILE_ERROR)
   }
 })
 
@@ -163,12 +178,12 @@ router.post('/score/:grade/:type', function (req, res, next) {
   // 覆盖目标文件
   var _path = path.join(scorepath, req.params.grade, req.params.type + '.json')
   try {
-    var json = decodeJson(req.body.content.toString());
+    var json = req.body.content
     fs.writeFileSync(_path, json)
-    res.json(errorCodes.OK)
+    sendJson(res, errorCodes.OK)
   } catch (err) {
     logger.log('error', 'write file <' + _path + '> failed -' + err)
-    res.json(errorCodes.WRITE_DATAFILE_ERROR)
+    sendJson(res, errorCodes.WRITE_DATAFILE_ERROR)
   }
 })
 
@@ -185,10 +200,10 @@ router.get('/whole/:source/:type/:grade', function (req, res, next) {
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
   try {
     var json = readDBFileSync(_path, emptyWords)
-    res.json({result: 0, err: '', data: json})
+    sendJson(res, {result: 0, err: '', content: json})
   } catch (err) {
     logger.log('error', 'read file <' + _path + '> failed -' + err)
-    res.json(errorCodes.READ_DATAFILE_ERROR)
+    sendJson(res, errorCodes.READ_DATAFILE_ERROR)
   }
 })
 
@@ -197,12 +212,12 @@ router.post('/whole/:source/:type/:grade', function (req, res, next) {
   // 覆盖目标文件
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
   try {
-    var json = decodeJson(req.body.content.toString())
+    var json = req.body.content
     fs.writeFileSync(_path, json)
-    res.json(errorCodes.OK)
+    sendJson(res, errorCodes.OK)
   } catch (err) {
     logger.log('error', 'write file <' + _path + '> failed -' + err)
-    res.json(errorCodes.WRITE_DATAFILE_ERROR)
+    sendJson(res, errorCodes.WRITE_DATAFILE_ERROR)
   }
 })
 
@@ -210,12 +225,11 @@ router.post('/whole/:source/:type/:grade', function (req, res, next) {
 router.post('/partial/:source/:type/:grade/:section', function (req, res, next) {
   // 覆盖目标文件
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
-  var data = readDBFileSync(_path, emptyWords)
-  var json = JSON.parse(data)
+  var json = readDBFileSync(_path, emptyWords)
   var oldSection = json[req.params.section]
   // 根据课序号进行替换, 如果没有则进行追加
 
-  res.json(errorCodes.OK)
+  sendJson(res, errorCodes.OK)
 })
 
 
