@@ -20,9 +20,7 @@
                             <el-col class="line" :span="2">难度</el-col>
                             <el-col :span="11">
                                 <el-radio-group v-model="form.level">
-                                    <el-radio label="1">初级</el-radio>
-                                    <el-radio label="2">中级</el-radio>
-                                    <el-radio label="3">高级</el-radio>
+                                    <el-radio v-for="(val, key, index) in levels" :label="key">{{ val }}</el-radio>
                                 </el-radio-group>
                             </el-col>
                         </el-form-item>
@@ -64,10 +62,12 @@
                         width="180">
                 </el-table-column>
                 <el-table-column
-                        prop="level"
                         label="难度"
                         header-align="center"
                         width="60">
+                        <template slot-scope="scope">
+                            {{ formatLevel(scope.row.level) }}
+                        </template>
                 </el-table-column>
                 <el-table-column
                         prop="sum"
@@ -198,7 +198,12 @@
         currentPage: 1,
         pageSize: 10,
         scoreData: [],
-        modified: false
+        modified: false,
+         levels:{
+          '1': '初级',
+          '2': '中级',
+          '3': '高级'
+        },
       };
     },
     computed: {
@@ -349,6 +354,9 @@
       },
       formatTime(time) {
         return utils.time2String(+time)
+      },
+      formatLevel(t) {
+        return this.levels[t]
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage;

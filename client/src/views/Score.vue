@@ -61,7 +61,6 @@
                             width="180">
                     </el-table-column>
                     <el-table-column
-                            prop="category"
                             label="操作类型"
                             header-align="center"
                             width="100">
@@ -76,7 +75,6 @@
                             width="120">
                     </el-table-column>
                     <el-table-column
-                            prop="type"
                             label="课程"
                             header-align="center"
                             width="100">
