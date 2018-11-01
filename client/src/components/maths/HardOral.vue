@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" id="hard-oral">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
@@ -123,12 +123,18 @@ export default {
       this.makeTest(Number(this.form.number), Number(this.form.column));
     },
     onClickAnswer() {
-      const $dom = $(this.$el);
-      $dom.find("span.answer").toggleClass("hidden");
+      const answer = document.querySelectorAll("#simple-oral span.answer")
+      answer.forEach((elem) => {
+        elem.classList.toggle('hidden')
+      })
     },
     onClickSave() {
-      const $dom = $(this.$el);
-      let page = $dom.find("#buddha-page")[0];
+      const page = document.querySelector("#hard-oral #buddha-page");
+
+      let date = this.form.date;
+      if (!date || date == "") {
+        date = utils.currentTimeString();
+      }
 
       html2canvas(page, {}).then(function(canvas) {
         var context = canvas.getContext("2d");
@@ -150,12 +156,8 @@ export default {
           535.28,
           (535.28 / canvas.width) * canvas.height
         );
-        var ans = $("span.answer").hasClass("hidden");
-        var date = $("input[name='date']").val();
-        if (!date || date == "") {
-          date = utils.currentTimeString();
-        }
-        pdf.save(date + (ans ? "" : "_ans") + ".pdf");
+
+        pdf.save(date + ".pdf");
       });
     },
     makeTest(num, col) {

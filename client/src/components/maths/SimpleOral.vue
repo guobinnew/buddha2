@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" id="simple-oral">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
@@ -116,12 +116,13 @@ export default {
       this.makeTest(Number(this.form.number), Number(this.form.column));
     },
     onClickAnswer() {
-      const $dom = $(this.$el);
-      $dom.find("span.answer").toggleClass("hidden");
+      const answer = document.querySelectorAll("#simple-oral span.answer")
+      answer.forEach((elem) => {
+        elem.classList.toggle('hidden')
+      })
     },
     onClickSave() {
-      const $dom = $(this.$el);
-      let page = $dom.find("#buddha-page")[0];
+      const page = document.querySelector("#simple-oral #buddha-page");
       let date = this.form.date;
       if (!date || date == "") {
         date = utils.currentTimeString();
@@ -147,14 +148,10 @@ export default {
           535.28,
           (535.28 / canvas.width) * canvas.height
         );
-        var ans = $("span.answer").hasClass("hidden");
-        pdf.save(date + (ans ? "" : "_ans") + ".pdf");
+        pdf.save(date + ".pdf");
       });
     },
     makeTest(num, col) {
-      const $dom = $(this.$el);
-      let pagebody = $dom.find("#buddha-page");
-
       // 生成Data
       let data = {};
       data.info = {};
@@ -164,7 +161,6 @@ export default {
       data.col = 24 / col;
 
       let level = Number(this.form.level);
-      logger.debug("makeTest", this.form);
       let list = [];
       let row = [];
       for (let i = 0; i < num; i++) {
