@@ -143,7 +143,7 @@ router.post('/updateProfile', function (req, res, next) {
     if (src.current < 0) {
       sendJson(res, errorCodes.SOURCE_TYPE_ERROR)
     } else {
-      writeDBFileSync(_path, JSON.stringify(manifest), {})
+      writeDBFileSync(_path, manifest, {})
       sendJson(res, errorCodes.OK)
     }
   } catch (err) {
@@ -195,7 +195,7 @@ router.post('/score/update', function (req, res, next) {
       } else {
         db.score -= (+json.record.number)
       }
-      writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
+      writeDBFileSync(_path, db, emptyRecords)
       sendJson(res, {result: 0, err: '', content: {score: db.score, id: json.record.id}})
 
       sendJson(res, {result: 0, err: '', content: json})
@@ -216,7 +216,7 @@ router.post('/score/update', function (req, res, next) {
         } else {
           db.score += (+rec[0].number)
         }
-        writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
+        writeDBFileSync(_path, db, emptyRecords)
         sendJson(res, {result: 0, err: '', content: {score: db.score}})
       } else {
         sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
@@ -243,7 +243,7 @@ router.post('/score/update', function (req, res, next) {
         } else {
           db.score -= (+json.record.number)
         }
-        writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
+        writeDBFileSync(_path, db, emptyRecords)
         sendJson(res, {result: 0, err: '', content: {score:db.score}})
       } else {
         sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
