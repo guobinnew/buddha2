@@ -68,21 +68,36 @@ var errorCodes = {
 }
 
 // 同步读取文件
-function readDBFileSync(path, emptyContent, create = true) {
+function readDBFileSync(filepath, emptyContent, create = true) {
   var content = emptyContent
   try {
-    if (!fs.existsSync(path)) {
+    if (!fs.existsSync(filepath)) {
       if (create) {
-        fs.writeFileSync(path, JSON.stringify(emptyContent))
+        // 创建目录
+        var dir = path.dirname(filepath)
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir)
+        }
+        fs.writeFileSync(filepath, JSON.stringify(emptyContent))
       }
     } else {
-      var data = fs.readFileSync(path)
+      var data = fs.readFileSync(filepath)
       content = JSON.parse(data)
     }
   } catch (err) {
-    logger.log('error', 'read file <' + path + '> failed, reason -' + err)
+    logger.log('error', 'read file <' + filepath + '> failed, reason -' + err)
   }
   return content
+}
+
+
+function writeDBFileSync(filepath, data, emptyContent) {
+  var content = data ? data : emptyContent
+  var dir = path.dirname(filepath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir)
+  }
+  fs.writeFileSync(filepath, JSON.stringify(content))
 }
 
 router.post('*', function (req, res, next) {
@@ -128,7 +143,7 @@ router.post('/updateProfile', function (req, res, next) {
     if (src.current < 0) {
       sendJson(res, errorCodes.SOURCE_TYPE_ERROR)
     } else {
-      fs.writeFileSync(_path, JSON.stringify(manifest))
+      writeDBFileSync(_path, JSON.stringify(manifest), {})
       sendJson(res, errorCodes.OK)
     }
   } catch (err) {
@@ -180,7 +195,7 @@ router.post('/score/update', function (req, res, next) {
       } else {
         db.score -= (+json.record.number)
       }
-      fs.writeFileSync(_path, JSON.stringify(db))
+      writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
       sendJson(res, {result: 0, err: '', content: {score: db.score, id: json.record.id}})
 
       sendJson(res, {result: 0, err: '', content: json})
@@ -201,7 +216,7 @@ router.post('/score/update', function (req, res, next) {
         } else {
           db.score += (+rec[0].number)
         }
-        fs.writeFileSync(_path, JSON.stringify(db))
+        writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
         sendJson(res, {result: 0, err: '', content: {score: db.score}})
       } else {
         sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
@@ -228,7 +243,7 @@ router.post('/score/update', function (req, res, next) {
         } else {
           db.score -= (+json.record.number)
         }
-        fs.writeFileSync(_path, JSON.stringify(db))
+        writeDBFileSync(_path, JSON.stringify(db), emptyRecords)
         sendJson(res, {result: 0, err: '', content: {score:db.score}})
       } else {
         sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
@@ -261,7 +276,7 @@ router.post('/score/:grade/:type', function (req, res, next) {
   var _path = path.join(scorepath, req.params.grade, req.params.type + '.json')
   try {
     var json = req.body.content
-    fs.writeFileSync(_path, json)
+    writeDBFileSync(_path, json, [])
     sendJson(res, errorCodes.OK)
   } catch (err) {
     logger.log('error', 'write file <' + _path + '> failed -' + err)
@@ -295,7 +310,7 @@ router.post('/whole/:source/:type/:grade', function (req, res, next) {
   var _path = path.join(dbpath, req.params.source, req.params.grade, req.params.type + '.json')
   try {
     var json = req.body.content
-    fs.writeFileSync(_path, json)
+    writeDBFileSync(_path, json, emptyWords)
     sendJson(res, errorCodes.OK)
   } catch (err) {
     logger.log('error', 'write file <' + _path + '> failed -' + err)

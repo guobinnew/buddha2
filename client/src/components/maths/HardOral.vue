@@ -123,7 +123,7 @@ export default {
       this.makeTest(Number(this.form.number), Number(this.form.column));
     },
     onClickAnswer() {
-      const answer = document.querySelectorAll("#simple-oral span.answer")
+      const answer = document.querySelectorAll("#hard-oral span.answer")
       answer.forEach((elem) => {
         elem.classList.toggle('hidden')
       })
@@ -161,9 +161,6 @@ export default {
       });
     },
     makeTest(num, col) {
-      const $dom = $(this.$el);
-      let pagebody = $dom.find("#buddha-page");
-
       // 生成Data
       let data = {};
       data.info = {};

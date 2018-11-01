@@ -9,7 +9,6 @@
         </el-row>
     </div>
     <div class='hline'></div>
-    
     <el-row :gutter="20" v-for="row in content.list">
       <template v-for="v in row">
       <el-col :span="content.col">
@@ -17,7 +16,6 @@
       </el-col>
       </template>
     </el-row>
-  </el-table>
    <div class="page-footer">
     <el-row :gutter="20">
       <el-col :span="4">对______</el-col>
