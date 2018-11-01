@@ -71,7 +71,7 @@
                             <el-dropdown-item command="student">学生信息</el-dropdown-item>
                             <el-dropdown-item command="mine">我的积分</el-dropdown-item>
                             <el-dropdown-item command="score">积分管理</el-dropdown-item>
-                             <el-dropdown-item command="quit">退出</el-dropdown-item>
+                            <el-dropdown-item command="quit">退出</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </el-header>
@@ -261,10 +261,6 @@
   import ycUtils from './utils';
   logger.setLevel("debug");
 
-   if (window.require) {
-    var ipc = window.require('electron').ipcRenderer
-  }
-
   export default {
     components: {ElContainer},
     data() {
@@ -399,10 +395,10 @@
           this.authForm.pwd = ''
           this.dialogAuthVisible = true
         } else if (command === 'quit') {
-          // 退出
-          if (window.require) {
-             ipc.send('close');
-          }
+          ycUtils.ajaxPost({
+            url: "http://localhost:3000/api/quit",
+            success: (data) => {}
+          })
         }
       },
       modifyProfile() {

@@ -107,6 +107,12 @@ router.post('*', function (req, res, next) {
   next()
 })
 
+router.get('/quit', function (req, res, next) {
+  process.send({cmd: 'quit'})
+  sendJson(res, errorCodes.OK)
+})
+
+
 // 身份验证
 router.post('/login', function (req, res, next) {
   // 检查密码是否正确
