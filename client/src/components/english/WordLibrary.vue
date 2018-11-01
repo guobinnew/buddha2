@@ -390,6 +390,7 @@
       },
       loadWords(sec) {
         this.activeSection = sec;
+        this.currentPage = 1
         this.currentData = this.words[this.activeSection].map(function (value, index) {
           return {id: index + 1, data: [].concat(yuchg.cloneObject(value))};
         })

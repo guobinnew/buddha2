@@ -322,6 +322,7 @@ export default {
     },
     loadWords(sec) {
       this.activeSection = sec;
+      this.currentPage = 1
       this.currentData = this.words[this.activeSection].map(function(
         value,
         index
