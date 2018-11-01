@@ -4,6 +4,7 @@ import Welcome from './views/Welcome.vue'
 import Editor from './views/ScriptEditor.vue'
 import Empty from './views/Empty.vue'
 import Score from './views/Score.vue'
+import Mine from './views/Mine.vue'
 
 import Maths_G3 from './views/Maths/G3.vue'
 import Maths_G4 from './views/Maths/G4.vue'
@@ -32,6 +33,11 @@ export default new Router({
       path: '/',
       name: 'welcome',
       component: Welcome
+    },
+    {
+      path: '/mine',
+      name: 'mine',
+      component: Mine
     },
     {
       path: '/score',

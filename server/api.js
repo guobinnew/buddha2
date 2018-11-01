@@ -8,6 +8,7 @@ var path = require('path')
 var fs = require('fs')
 var CryptoJS = require('crypto-js')
 var settings = require('./setting')
+var uuidv4 = require('uuid/v4')
 
 var cryptoSecret = 'unique@buddha2'
 
@@ -39,6 +40,18 @@ function sendJson(res, data, crypto = true) {
   }
 }
 
+// 日期比较
+function dateCompare(d1, d2) {
+  var od1 = new Date(d1);
+  var od2 = new Date(d2);
+  if (od1.getTime() > od2.getTime()) {
+    return 1
+  } else if (od1.getTime() < od2.getTime()) {
+    return -1
+  }
+  return 0
+}
+
 var emptyRecords = {
   "score": 0,
   "records": []
@@ -50,6 +63,7 @@ var errorCodes = {
   WRITE_DATAFILE_ERROR: {result: 100, err: '更新数据文件时发生错误'},
   READ_DATAFILE_ERROR: {result: 101, err: '读取数据文件时发生错误'},
   UNKNOWN_OPERATION_ERROR: {result: 102, err: '未知的操作'},
+  RECORD_NOTFOUND_ERROR: {result: 103, err: '记录不存在'},
   LOGIN_ERROR: {result: 1000, err: '密码不正确'}
 }
 
@@ -73,8 +87,7 @@ function readDBFileSync(path, emptyContent, create = true) {
 
 router.post('*', function (req, res, next) {
   if (isString(req.body.data)) {
-    req.body.content = JSON.parse(decodeJson(decodeURIComponent(req.body.data)))
-    console.log('content ====', req.body.content)
+    req.body.content = JSON.parse(decodeJson(req.body.data))
   }
   next()
 })
@@ -141,16 +154,85 @@ router.get('/score/record', function (req, res, next) {
 router.post('/score/update', function (req, res, next) {
   var _path = path.join(scorepath, 'score_vip.json')
   try {
-    var json = readDBFileSync(_path, emptyRecords)
+    var db = readDBFileSync(_path, emptyRecords)
     // 解码数据
     var json = req.body.content
+    let found = -1
     if (json.type === 'add') { // 添加积分记录
+      // 排序添加
+      json.record.id = uuidv4()
+      db.records.forEach((val, index) => {
+        var c = dateCompare(val.date, json.record.date)
+        if (c > 0) {
+          found = index
+          return false
+        }
+      })
 
-      sendJson(res, {result: 0, err: '', data: json})
+      if (found >= 0) {
+        db.records.splice(found, 0, json.record)
+      } else {
+        db.records.push(json.record)
+      }
+
+      if (json.record.category === '1') {  //奖励
+        db.score += (+json.record.number)
+      } else {
+        db.score -= (+json.record.number)
+      }
+      fs.writeFileSync(_path, JSON.stringify(db))
+      sendJson(res, {result: 0, err: '', content: {score: db.score, id: json.record.id}})
+
+      sendJson(res, {result: 0, err: '', content: json})
     } else if (json.type === 'delete') { // 删除积分记录
-      sendJson(res, errorCodes.OK)
-    } else if (json.type === 'update') { // 删除积分记录
-      sendJson(res, errorCodes.OK)
+      // 查找id
+      db.records.forEach((val, index) => {
+        if (val.id === json.id) {
+          found = index
+          return false
+        }
+      })
+
+      if (found >= 0) {
+        // 修改分数
+        const rec = db.records.splice(found, 1)
+        if (rec[0].category === '1') {  //奖励
+          db.score -= (+rec[0].number)
+        } else {
+          db.score += (+rec[0].number)
+        }
+        fs.writeFileSync(_path, JSON.stringify(db))
+        sendJson(res, {result: 0, err: '', content: {score: db.score}})
+      } else {
+        sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
+      }
+    } else if (json.type === 'update') { // 更新积分记录
+      // 查找id
+      db.records.forEach((val, index) => {
+        if (val.id === json.record.id) {
+          found = index
+          return false
+        }
+      })
+      if (found >= 0) {
+        // 修改分数
+        const oldrec = db.records[found]
+        if (oldrec.category === '1') {  //奖励
+          db.score -= (+oldrec.number)
+        } else {
+          db.score += (+oldrec.number)
+        }
+        db.records[found] = json.record
+        if (json.record.category === '1') {  //奖励
+          db.score += (+json.record.number)
+        } else {
+          db.score -= (+json.record.number)
+        }
+        fs.writeFileSync(_path, JSON.stringify(db))
+        sendJson(res, {result: 0, err: '', content: {score:db.score}})
+      } else {
+        sendJson(res, errorCodes.RECORD_NOTFOUND_ERROR)
+      }
     } else {
       sendJson(res, errorCodes.UNKNOWN_OPERATION_ERROR)
     }
