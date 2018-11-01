@@ -45,7 +45,7 @@
             </el-collapse>
             <el-button-group>
               <el-button type="primary" icon="el-icon-edit" @click="onClickSave">保存修改</el-button>
-              <el-button type="success" icon="el-icon-share" @click="onClickRefresh">重新加载</el-button>
+              <el-button type="warning" icon="el-icon-refresh" @click="onClickRefresh">重新加载</el-button>
             </el-button-group>
             <el-table
                     border

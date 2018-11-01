@@ -12,6 +12,7 @@ let instance = cp.spawn('node',[path.join(__dirname,'dist/server.js')])
 
 const ipcMain = electron.ipcMain
 const ipcRenderer = electron.ipcRenderer
+ipcMain.on('close', e => mainWindow.close());
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

@@ -71,6 +71,7 @@
                             <el-dropdown-item command="student">学生信息</el-dropdown-item>
                             <el-dropdown-item command="mine">我的积分</el-dropdown-item>
                             <el-dropdown-item command="score">积分管理</el-dropdown-item>
+                             <el-dropdown-item command="quit">退出</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </el-header>
@@ -103,10 +104,10 @@
                 <el-button type="primary" @click="modifyProfile">修 改</el-button>
             </div>
         </el-dialog>
-        <el-dialog title="身份确认" :visible.sync="dialogAuthVisible">
+        <el-dialog title="身份确认" :visible.sync="dialogAuthVisible"  width="30%">
             <el-form :model="authForm" label-width="100px">
                 <el-form-item label="管理员口令" prop="pwd" :rules="{required: true, message: '密码不能为空', trigger: 'blur'}">
-                    <el-input v-model="authForm.pwd" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="authForm.pwd" autocomplete="off"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -257,9 +258,12 @@
   import ElContainer from "../node_modules/element-ui/packages/container/src/main";
   import logger from "./logger";
   import yuchg from "./base";
-  import $ from "jquery";
-  import ycUtils from './utils'
+  import ycUtils from './utils';
   logger.setLevel("debug");
+
+   if (window.require) {
+    var ipc = window.require('electron').ipcRenderer
+  }
 
   export default {
     components: {ElContainer},
@@ -387,13 +391,18 @@
             return
           }
           this.$router.push({name:'mine'})
-        } else {
+        } else if (command === 'score') {
           // 如果当前已经是
           if (this.$router.history.current.name === 'score') {
             return
           }
           this.authForm.pwd = ''
           this.dialogAuthVisible = true
+        } else if (command === 'quit') {
+          // 退出
+          if (window.require) {
+             ipc.send('close');
+          }
         }
       },
       modifyProfile() {

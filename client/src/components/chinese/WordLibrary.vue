@@ -23,9 +23,9 @@
             <el-main>
                 <el-button-group>
                     <el-button type="primary" icon="el-icon-edit" @click="onClickAddRow">添加章节</el-button>
-                    <el-button type="primary" icon="el-icon-edit" @click="onClickRefresh">重新加载</el-button>
+                    <el-button type="warning" icon="el-icon-refresh" @click="onClickRefresh">重新加载</el-button>
                     <el-button type="success" icon="el-icon-share" @click="onClickSave">保存修改</el-button>
-                    <el-button type="danger" icon="el-icon-delete" @click="onClickExport">导出到文件</el-button>
+                    <el-button type="danger" icon="el-icon-document" @click="onClickExport">导出到文件</el-button>
                 </el-button-group>
                 <el-table
                         ref="wordTable"

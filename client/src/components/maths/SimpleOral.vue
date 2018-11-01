@@ -3,7 +3,7 @@
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickTest">生成卷子</el-button>
           <el-button type="success" icon="el-icon-share" @click="onClickAnswer">显示/隐藏答案</el-button>
-          <el-button type="danger" icon="el-icon-delete" @click="onClickSave">保存PDF</el-button>
+          <el-button type="danger" icon="el-icon-document" @click="onClickSave">保存PDF</el-button>
         </el-button-group>
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="生成选项" name="1">

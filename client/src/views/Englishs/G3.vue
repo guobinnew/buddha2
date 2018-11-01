@@ -4,7 +4,7 @@
         <el-tab-pane label="单词听写" name="test">
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickStart">开始听写</el-button>
-          <el-button type="success" icon="el-icon-share" @click="onClickReset">重新开始</el-button>
+          <el-button type="success" icon="fa fa-repeat" @click="onClickReset">重新开始</el-button>
         </el-button-group>
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="听写选项" name="1">
