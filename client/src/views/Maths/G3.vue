@@ -19,7 +19,6 @@
   import SimpleOral from '../../components/maths/SimpleOral.vue'
   import logger from '../../logger'
   import Score from '../../components/maths/Score.vue'
-  import $ from "jquery"
   import yuchg from "../../base"
 
   export default {

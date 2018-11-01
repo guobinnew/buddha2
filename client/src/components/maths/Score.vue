@@ -168,7 +168,6 @@
 <script>
   import logger from "../../logger";
   import utils from "./utils";
-  import $ from "jquery";
   import yuchg from "../../base";
   import ycUtils from '../../utils'
   import echarts from "echarts";
@@ -479,8 +478,7 @@
     mounted: function () {
       this.url = `http://localhost:3000/api/score/${this.source}/oral`
       this.form.date = utils.currentTimeString()
-      let $dom = $(this.$el);
-      this.chart = echarts.init($dom.find("#buddha-chart")[0]);
+      this.chart = echarts.init(document.querySelector("#buddha-chart"));
       this.chart.setOption(this.chartOpt);
       // 读取成绩
       this.fetchRecords()

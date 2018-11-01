@@ -93,7 +93,6 @@
 <script>
 import Word from "../../components/english/Word.vue";
 import WordLibrary from "../../components/english/WordLibrary.vue";
-import $ from "jquery";
 import yuchg from '../../base'
 import ycUtils from '../../utils'
 import logger from '../../logger'

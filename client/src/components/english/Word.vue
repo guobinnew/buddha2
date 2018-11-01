@@ -45,7 +45,6 @@
 
 <script>
 import logger from "../../logger";
-import $ from "jquery";
 import yuchg from "../../base";
 import utils from './utils'
 

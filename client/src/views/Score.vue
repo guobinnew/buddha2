@@ -94,6 +94,7 @@
                             width="150">
                         <template slot-scope="scope">
                             <el-button
+                                    disabled
                                     size="mini"
                                     type="primary"
                                     @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -176,7 +177,6 @@
 
 <script>
   import logger from "../logger";
-  import $ from "jquery";
   import yuchg from "../base";
   import ycUtils from '../utils'
   import echarts from "echarts";
@@ -231,16 +231,16 @@
       },
       chartOpt: function () {
         let series = []
-        const legend = $.map(this.types, function (v, k) {
+        const legend = Object.keys(this.types).map((k) => {
           series.push({
             id: k,
-            name: v,
+            name: this.types[k],
             type: "line",
             stack: "总积分",
             areaStyle: {},
             data: []
           })
-          return v
+          return this.types[k]
         })
 
         let option = {
@@ -455,20 +455,20 @@
         let chart_date = new Array(data.length)
         // 按类型进行数据统计
         const cateSum = {}
-        $.map(this.categories, function (v, k) {
+        for (let [k, v] of Object.entries(this.categories)) {
           cateSum[k] = {
             value:0, name: v
           }
-        })
+        }
 
         const sum = {}
         const seriesData = {}
-        const series = $.map(this.types, function(v, k) {
+        const series = Object.keys(this.types).map((k) => {
           sum[k] = 0
           seriesData[k] = new Array(data.length)
           return {
             id: k,
-            name: v,
+            name: this.types[k],
             data: seriesData[k]
           }
         })
@@ -484,10 +484,9 @@
           cateSum[value.category].value += value.number
           sum[value.type] +=  v
 
-          logger.warn(value, sum, this.types)
-          $.map(this.types, (val, key) =>{
+          for (let key of Object.keys(this.types)) {
             seriesData[key][index] = sum[key]
-          })
+          }
         })
 
         // 绘制图表
@@ -503,9 +502,7 @@
           series: [
             {
               name: 'score',
-              data: $.map(cateSum, function (v,k) {
-                return v
-              })
+              data: Object.values(cateSum)
             }
           ]
         })
@@ -519,10 +516,9 @@
     },
     mounted: function () {
       this.form.date = yuchg.currentTimeString()
-      let $dom = $(this.$el);
-      this.chart = echarts.init($dom.find("#buddha-chart")[0]);
+      this.chart = echarts.init(document.querySelector("#buddha-chart"));
       this.chart.setOption(this.chartOpt);
-      this.chartPie = echarts.init($dom.find("#buddha-chart-pie")[0]);
+      this.chartPie = echarts.init(document.querySelector("#buddha-chart-pie"));
       this.chartPie.setOption(this.chartPieOpt);
       // 读取积分记录
       this.fetchRecords()

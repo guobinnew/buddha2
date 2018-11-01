@@ -84,7 +84,6 @@
 <script>
 import logger from "../../logger";
 import utils from "./utils";
-import $ from "jquery";
 import yuchg from "../../base";
 
 export default {

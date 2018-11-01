@@ -90,7 +90,6 @@
 import Page from "./Page.vue";
 import logger from "../../logger";
 import utils from "./utils";
-import $ from "jquery";
 import yuchg from "../../base";
 import html2canvas from "html2canvas";
 import * as jsPDF from "jspdf";

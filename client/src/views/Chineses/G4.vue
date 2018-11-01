@@ -92,8 +92,7 @@
 
 <script>
 import Word from "../../components/chinese/Word.vue";
- import WordLibrary from "../../components/chinese/WordLibrary.vue";
-import $ from "jquery";
+import WordLibrary from "../../components/chinese/WordLibrary.vue";
 import yuchg from '../../base'
 import ycUtils from '../../utils'
 import logger from '../../logger'
