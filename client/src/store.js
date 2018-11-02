@@ -25,7 +25,7 @@ export default new Vuex.Store({
       maths: [],
       chineses: [],
       englishs: [],
-      programs: []
+      logics: []
     }
   },
   getters: {
@@ -81,7 +81,7 @@ export default new Vuex.Store({
       state.pages.maths = info.pages.maths
       state.pages.chineses = info.pages.chineses
       state.pages.englishs = info.pages.englishs
-      state.pages.programs = info.pages.programs
+      state.pages.logics = info.pages.logics
     },
     updateUser(state, user) {
       state.user.name = user.name

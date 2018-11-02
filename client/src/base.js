@@ -276,14 +276,18 @@ yuchg.currentTimeString = function() {
 
 // 日期比较
 yuchg.dateCompare = function(d1, d2) {
-  var od1 = new Date(d1);
-  var od2 = new Date(d2);
+  let od1 = new Date(d1);
+  let od2 = new Date(d2);
   if (od1.getTime() > od2.getTime()) {
     return 1
   } else if (od1.getTime() < od2.getTime()) {
     return -1
   }
   return 0
+}
+
+yuchg.randomNumber = function(max, min = 0) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 export default yuchg

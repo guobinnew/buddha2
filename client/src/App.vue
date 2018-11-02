@@ -344,14 +344,16 @@
       },
       isValidPage(course, grade) {
         logger.debug("isValidPage", course, grade);
-        if (course == 1) {
+        if (course == 0) {
+          return true;
+        } else if (course == 1) {
           return this.$store.state.pages["maths"].indexOf(grade) >= 0;
         } else if (course == 2) {
           return this.$store.state.pages["chineses"].indexOf(grade) >= 0;
         } else if (course == 3) {
           return this.$store.state.pages["englishs"].indexOf(grade) >= 0;
-        } else if (course == 0) {
-          return true;
+        } else if (course == 4) {
+          return this.$store.state.pages["logics"].indexOf(grade) >= 0;
         }
         return false;
       },
@@ -361,16 +363,17 @@
         };
         let no = this.getGradeNo(grade);
         if (this.isValidPage(course, no)) {
-          if (course == 4) {
-            page.name = "editor";
-          } else if (course == 1) {
-            page.name = "mathsg" + no;
-          } else if (course == 2) {
-            page.name = "chsg" + no;
-          } else if (course == 3) {
-            page.name = "engsg" + no;
-          } else if (course == 0) {
+          let cid  = +course
+          if (cid === 0) {
             page.name = "welcome";
+          } else if (cid === 1) {
+            page.name = "math#g" + no;
+          } else if (cid === 2) {
+            page.name = "chinese#g" + no;
+          } else if (cid === 3) {
+            page.name = "english#g" + no;
+          } else if (cid === 4) {
+            page.name = "logic#g" + no;
           }
         }
         return page;
