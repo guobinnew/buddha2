@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "debug": "electron . --debug --enable-logging",
-    "publish": "electron-packager ./ buddha --platform=mas --arch=x64 --app_version=1.0.0 --electron_version=2.0.2  --out=dist/ --overwrite --ignore=node_modules/electron* --ignore=node_mudules/.bin --ignore=.git --ignore=dist --prune",
+    "publish": "electron-packager ./ buddha2 --platform=darwin --arch=x64 --app_version=1.0.0 --electron_version=3.0.7  --out=electron/ --overwrite --ignore=node_modules/electron* --ignore=node_mudules/.bin --ignore=bin --ignore=build --ignore=.git --ignore=dist --prune",
     "server": "node ./dist/server.js",
     "test": "mocha",
     "build:server": "./node_modules/.bin/webpack --config ./build/webpack.config.js",
@@ -49,7 +49,7 @@
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.4",
     "css-loader": "^1.0.0",
-    "electron": "^2.0.9",
+    "electron": "^3.0.7",
     "electron-packager": "^12.1.2",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^2.0.0",
