@@ -2,7 +2,7 @@
     <div style="overflow: hidden;">
         <el-button-group>
             <el-button type="primary" icon="fa fa-arrow-left" @click="onClickTest">随机生成</el-button>
-            <el-button type="success" icon="fa fa-arrow-right" @click="onClickExport">保存为PDF</el-button>
+            <el-button type="success" icon="fa fa-arrow-right" @click="onClickExport">保存为图片</el-button>
             <el-button type="danger" icon="fa fa-buysellads" @click="onClickAnswer">查看答案</el-button>
         </el-button-group>
         <el-collapse accordion>
@@ -24,8 +24,10 @@
                 </el-form>
             </el-collapse-item>
         </el-collapse>
-        <svg class="buddha-sudoku" :width='width' :height='height' version="1.1" xmlns="http://www.w3.org/2000/svg">
-        </svg>
+        <div class="buddha-svg-wrap">
+          <svg class="buddha-sudoku" :width='width' :height='height' version="1.1" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
     </div>
 </template>
 
@@ -99,6 +101,7 @@
 import logger from "../../logger";
 import yuchg from "../../base";
 import $ from "jquery";
+import svg2png from "save-svg-as-png";
 
 const ycSvgNS = "http://www.w3.org/2000/svg";
 
@@ -122,17 +125,21 @@ export default {
   computed: {},
   methods: {
     onClickTest() {
-      this.content = []
+      this.content = [];
       this.sudokuGenerate();
       this.makeSudoku(this.content);
     },
     onClickExport() {
-      // 导出为PDF文件
+      // 导出为PNG文件
+      let date = yuchg.currentTimeString();
+      svg2png.saveSvgAsPng(this.svg, "数独" + date + ".png");
     },
     onClickAnswer() {
-      let keys = document.querySelectorAll("svg.buddha-sudoku .buddha-sudoku-key");
+      let keys = document.querySelectorAll(
+        "svg.buddha-sudoku .buddha-sudoku-key"
+      );
       keys.forEach(function(v) {
-        v.style.display = v.style.display === 'none' ? 'block' : 'none'
+        v.style.display = v.style.display === "none" ? "block" : "none";
       });
     },
     sudokuGenerate() {
@@ -141,7 +148,7 @@ export default {
         // 先生成一个数独矩阵作为模版
         const data = new Array(9);
         for (let i = 0; i < 9; i++) {
-          data[i] = [0,0,0,0,0,0,0,0,0];
+          data[i] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
         }
 
         const checkColumn = (n, col) => {
@@ -225,7 +232,7 @@ export default {
           }
         };
 
-        const maskCells = (level) => {
+        const maskCells = level => {
           const maxLevel = 7;
           let min = 1;
           let max = 1;
@@ -233,7 +240,7 @@ export default {
             level = maxLevel;
           }
 
-          let copy = yuchg.cloneObject(data)
+          let copy = yuchg.cloneObject(data);
           // 每次从每行随机抽取一个
           for (let i = 0; i < level; i++) {
             let arr = [].concat(this.numArr);
@@ -245,11 +252,11 @@ export default {
               }
             }
           }
-          return copy
+          return copy;
         };
 
         const currentLevel = Number(this.level) + Number(this.form.level);
-        logger.warn('level', this.level, currentLevel)
+        logger.warn("level", this.level, currentLevel);
         for (let i = 0; i < this.form.number; i++) {
           upset();
           this.content.push(maskCells(currentLevel));
@@ -287,7 +294,7 @@ export default {
       rect.setAttribute("width", option.width);
       rect.setAttribute("height", option.height);
       rect.setAttribute("stroke", "#333");
-      rect.setAttribute("fill",  option.isKey ? '#eee' : "#fff");
+      rect.setAttribute("fill", option.isKey ? "#eee" : "#fff");
       option.strokeWidth &&
         rect.setAttribute("stroke-width", option.strokeWidth);
       rect.classList.add("buddha-cell-bg");
@@ -303,14 +310,14 @@ export default {
       text.textContent = option.text;
       if (option.isKey) {
         text.classList.add("buddha-sudoku-key");
-        text.style.fontWeight = 'bold'
-        text.style.display = 'none'
+        text.style.fontWeight = "bold";
+        text.style.display = "none";
       }
       g.appendChild(text);
       return g;
     },
     makeSudoku(data) {
-      $(this.svg).empty()
+      $(this.svg).empty();
 
       let offsetx = (this.width - 360) / 2;
       for (let m = 0; m < data.length; m++) {
@@ -323,7 +330,7 @@ export default {
         const box = data[m];
         for (let i = 0; i < 9; i++) {
           for (let j = 0; j < 9; j++) {
-            let cell = box[i][j]
+            let cell = box[i][j];
             g.appendChild(
               this.sudokuCell({
                 translatex: j * this.cellWidth,
@@ -360,7 +367,7 @@ export default {
           );
         }
 
-        this.svg.appendChild(g)
+        this.svg.appendChild(g);
       }
     }
   },
@@ -370,4 +377,3 @@ export default {
   activated: function() {}
 };
 </script>
-
