@@ -242,9 +242,10 @@ export default {
 
           let copy = yuchg.cloneObject(data);
           // 每次从每行随机抽取一个
+          let arr = [].concat(this.numArr);
           for (let i = 0; i < level; i++) {
-            let arr = [].concat(this.numArr);
-            arr.sort(yuchg.randomSort);
+            arr = yuchg.shuffle(arr);
+            logger.warn('arr', arr)
             for (let j = 0; j < arr.length; j++) {
               let v = copy[j][arr[j] - 1];
               if (yuchg.isNumber(v)) {
