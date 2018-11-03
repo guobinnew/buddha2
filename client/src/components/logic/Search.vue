@@ -117,8 +117,7 @@ export default {
         level: "1",
         type: "1"
       },
-      loadedType: '',
-      wordSum: 0,
+      loadedType: "",
       words: [],
       svg: null,
       width: 800,
@@ -127,8 +126,8 @@ export default {
       currentLevel: 0,
       levels: [6, 8, 10, 12, 15, 18, 20],
       types: {
-        '1' : 'words',
-        '2' : 'glossary'
+        "1": "words",
+        "2": "glossary"
       }
     };
   },
@@ -138,16 +137,15 @@ export default {
       const callback = () => {
         this.content = [];
         if (!this.searchGenerate()) {
-          return
+          return;
         }
         this.makeSearch(this.content);
-      }
+      };
       if (!this.loadedType !== this.form.type) {
         this.fetchWords(this.form.type, callback);
       } else {
-        callback()
+        callback();
       }
-
     },
     onClickExport() {
       // 导出为PNG文件
@@ -165,41 +163,171 @@ export default {
     searchGenerate() {
       // 生成游戏数据
       try {
-        if (this.wordSum < 10) {
+        if (this.words.length < 10) {
           this.$message.error("词汇数目太少，请录入语文或英语词汇");
           return false;
         }
-   
+
         // 根据难度确定曲线节点数目
         this.currentLevel = Number(this.level) + Number(this.form.level);
         if (this.currentLevel >= this.levels.length) {
           this.currentLevel = this.levels.length - 1;
         }
 
-        // 
-        if (this.form.type === '1') { // 语文模式
-          this.searchChsGenerate()
-        } else { // 英语模式
-          this.searchEngGenerate()
+        //
+        if (this.form.type === "1") {
+          // 语文模式
+          this.searchChsGenerate();
+        } else {
+          // 英语模式
+          this.searchEngGenerate();
         }
-        return true
+        return true;
       } catch (e) {
         logger.warn(e);
-        return false
+        return false;
       }
     },
     searchChsGenerate() {
-      // 
-      const size = this.levels[this.currentLevel]
+      //
+      const size = this.levels[this.currentLevel];
 
-      this.content = new Array(size)
+      this.content = new Array(size);
+      for (let i = 0; i < size; i++) {
+        this.content[i] = new Array(size).fill(null).map(v => {
+          return {
+            word: "",
+            visited: 0
+          };
+        });
+      }
+      const data = this.content;
+      const sortedWords = yuchg.shuffle(this.words);
 
+      const check = (pos, dir, word) => {
+        let found = true;
+        let cur = Object.assign({}, pos);
+        for (let i = 0; i < word.length; i++) {
+          if (cur.col >= size || cur.row >= size) {
+            found = false;
+            break;
+          }
+          let cell = data[cur.row][cur.col];
+          if (dir === 1) {
+            cur.col += 1;
+          } else if (dir === 2) {
+            cur.row += 1;
+          } else {
+            cur.col += 1;
+            cur.row += 1;
+          }
+          if (cell.word === "" || (i === 0 && cell.word === word[0])) {
+            continue;
+          }
+          found = false;
+          break;
+        }
+        return found;
+      };
 
+      const samplePos = (dir, word) => {
+        let pos = {
+          row: yuchg.randomNumber(size - 1, 0),
+          col: yuchg.randomNumber(size - 1, 0),
+          valid: false
+        };
+        // 判断是否符合条件，如果不符合，则继续搜索
+        let tryNum = size;
+        while (!check(pos, dir, word) && tryNum > 0) {
+          // 沿对角线移动
+          pos.row = (pos.row + 1) % size;
+          pos.col = (pos.col + 1) % size;
+          tryNum -= 1;
+        }
 
+        pos.valid = tryNum > 0;
+        return pos;
+      };
+
+      // 填字
+      let maxnum = Math.floor((size * size) / 2); // 最多填字比例
+      let wordIndex = 0;
+      let num = 0;
+      let directions = [1, 2, 3]; // 水平 垂直 对角线
+      let fail = 5; // 允许失败次数，如果超过则中止
+      let c = { row: 0, col: 0, valid: false };
+      let valids = [];
+      while (num < maxnum && fail > 0) {
+        let w = sortedWords[wordIndex];
+        // 如果一个方向找不到则换一个方向
+        let success = false;
+        yuchg.shuffle(directions).forEach(dir => {
+          // 随机选取一个起始位置
+          c = samplePos(dir, w);
+          if (!c.valid) {
+            return true;
+          }
+
+          if (dir === 1) {
+            for (let j = 0; j < w.length; j++) {
+              data[c.row][c.col + j].word = w[j];
+            }
+          } else if (dir === 2) {
+            for (let j = 0; j < w.length; j++) {
+              data[c.row + j][c.col].word = w[j];
+            }
+          } else {
+            for (let j = 0; j < w.length; j++) {
+              data[c.row + j][c.col + j].word = w[j];
+            }
+          }
+          num += w.length;
+          success = true;
+          valids.push(wordIndex);
+          return false;
+        });
+
+        fail += success ? 0 : 1;
+        while (
+          valids.indexOf(wordIndex) >= 0 &&
+          wordIndex < sortedWords.length
+        ) {
+          wordIndex += 1;
+        }
+        if (wordIndex >= sortedWords.length) {
+          break;
+        }
+      }
+
+      // 在空白区域随机填字
+      let disturb = [];
+      num = 0;
+      wordIndex = wordIndex % sortedWords.length;
+      while (num < maxnum) {
+        wordIndex = yuchg.randomNumber(sortedWords.length - 1, 0);
+        let w = sortedWords[wordIndex]
+        for (let i = 0; i < w.length; i++) {
+          disturb.push(w[i]);
+        };
+         num += w.length;
+      }
+
+      disturb = yuchg.shuffle(disturb);
+
+      data.forEach(row => {
+        row.forEach(v => {
+          if (v.word === "") {
+            v.word = disturb[yuchg.randomNumber(disturb.length - 1, 0)];
+          }
+        });
+        logger.warn(
+          row.map(v => {
+            return v.word;
+          })
+        );
+      });
     },
-    searchEngGenerate() {
-
-    },
+    searchEngGenerate() {},
     searchLine(option) {
       let line = document.createElementNS(ycSvgNS, "line");
       line.setAttribute("x1", option.startx);
@@ -228,15 +356,8 @@ export default {
       let rect = document.createElementNS(ycSvgNS, "rect");
       rect.setAttribute("width", option.width);
       rect.setAttribute("height", option.height);
-      if (option.shape === "round") {
-        rect.setAttribute("rx", option.width / 2);
-        rect.setAttribute("ry", option.height / 2);
-      } else {
-        rect.setAttribute("rx", 8);
-        rect.setAttribute("ry", 8);
-      }
       rect.setAttribute("stroke", "#333");
-      rect.setAttribute("fill", "#eee");
+      rect.setAttribute("fill", "#fff");
       rect.classList.add("buddha-cell-bg");
       g.appendChild(rect);
 
@@ -254,18 +375,56 @@ export default {
     makeSearch(data) {
       $(this.svg).empty();
 
+      const size = this.levels[this.currentLevel];
+      let boxWidth = size * 40;
+      let boxHeight = size * 40;
+      let offsetx = (this.width - boxWidth) / 2;
+      let offsety = (this.height - boxHeight) / 2;
+
+      // 计算偏移位置
+        let g = document.createElementNS(ycSvgNS, "g");
+        g.setAttribute(
+          "transform",
+          `translate(${offsetx}, ${offsety})`
+        );
+
+      //边框
+      let rect = document.createElementNS(ycSvgNS, "rect");
+      rect.setAttribute("width", boxWidth);
+      rect.setAttribute("height", boxHeight);
+      rect.setAttribute("stroke", "#333");
+      rect.setAttribute("stroke-width", "3");
+      rect.setAttribute("fill", "#fff");
+      rect.classList.add("buddha-cell-bg");
+      g.appendChild(rect);
+ 
+        for (let i = 0; i < size; i++) {
+          for (let j = 0; j < size; j++) {
+            let cell = data[i][j];
+            g.appendChild(
+              this.searchCell({
+                translatex: j * 40,
+                translatey: i * 40,
+                width: 40,
+                height: 40,
+                text: cell.word
+              })
+            );
+          }
+        }
+
+        this.svg.appendChild(g);
+
     },
     statWords(data) {
-      let clone = yuchg.cloneObject(data);
-      let num = 0;
-      logger.warn("stat", clone);
-      for (let sec of Object.values(clone)) {
+      this.words = [];
+      for (let sec of Object.values(data)) {
         sec.forEach(ch => {
-          this.words.push(ch);
-          num += ch.length;
+          ch.forEach(v => {
+            this.words.push(v);
+          });
         });
       }
-      this.wordSum = num;
     },
     fetchWords(type, callback) {
       if (this.url === "" || this.loaded) {
@@ -273,7 +432,7 @@ export default {
       }
 
       ycUtils.ajaxGet({
-        url: this.url + `/${ this.types[this.form.type]}/${this.grade}`,
+        url: this.url + `/${this.types[this.form.type]}/${this.grade}`,
         success: data => {
           if (data.result === 0) {
             this.statWords(data.content);
