@@ -219,7 +219,7 @@ export default {
             cur.col += 1;
             cur.row += 1;
           }
-          if (cell.word === "" || (i === 0 && cell.word === word[0])) {
+          if (cell.word === "" ||  cell.word === word[i]) {
             continue;
           }
           found = false;
@@ -269,7 +269,6 @@ export default {
               continue;
             }
 
-            logger.warn('select word ===', wordIndex, dir, w)
             if (dir === 1) {
               for (let j = 0; j < w.length; j++) {
                 data[c.row][c.col + j].word = w[j];

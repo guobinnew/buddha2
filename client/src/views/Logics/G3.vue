@@ -7,7 +7,7 @@
             <Puzzle level="2" ref="puzzle"></Puzzle>
         </el-tab-pane>
         <el-tab-pane label="填字">
-            <Crossword level="2" ref="crossword"></Crossword>
+            <Crossword level="2" :url="url" :grade="grade" ref="crossword"></Crossword>
         </el-tab-pane>
          <el-tab-pane label="找单词">
             <Search level="2" :url="url" :grade="grade" ref="search"></Search>

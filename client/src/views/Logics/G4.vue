@@ -6,6 +6,9 @@
     <el-tab-pane label="迷宫">
       <Puzzle level="4" ref="puzzle"></Puzzle>
     </el-tab-pane>
+    <el-tab-pane label="找单词">
+      <Search level="4" :url="url" :grade="grade" ref="search"></Search>
+    </el-tab-pane>
   </el-tabs>
 </template>
 
@@ -18,19 +21,26 @@
 <script>
   import Sudoku from '../../components/logic/Sudoku.vue'
   import Puzzle from '../../components/logic/Puzzle.vue'
+  import Search from '../../components/logic/Search.vue'
   import logger from '../../logger'
   import yuchg from "../../base"
 
   export default {
-    components: {Sudoku, Puzzle},
+    components: {Sudoku, Puzzle, Search},
     data: function () {
       return {
+        url: '',
+        grade: ''
       }
     },
     computed: {},
     created: function () {
+      let source = this.$store.getters.source
+      this.url = `http://localhost:3000/api/whole/${source}`
+      this.grade = 'g4'
     },
     mounted: function () {
+
     }
   }
 </script>
