@@ -3,6 +3,9 @@
     <el-tab-pane label="数独">
       <Sudoku level="4" ref="sudoku"></Sudoku>
     </el-tab-pane>
+    <el-tab-pane label="迷宫">
+      <Puzzle level="4" ref="puzzle"></Puzzle>
+    </el-tab-pane>
   </el-tabs>
 </template>
 
@@ -14,11 +17,12 @@
 
 <script>
   import Sudoku from '../../components/logic/Sudoku.vue'
+  import Puzzle from '../../components/logic/Puzzle.vue'
   import logger from '../../logger'
   import yuchg from "../../base"
 
   export default {
-    components: {Sudoku},
+    components: {Sudoku, Puzzle},
     data: function () {
       return {
       }
