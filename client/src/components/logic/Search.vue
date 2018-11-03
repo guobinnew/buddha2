@@ -260,13 +260,16 @@ export default {
         let success = false;
         if (w.length < size * 0.8) {
           // 如果一个方向找不到则换一个方向
-          yuchg.shuffle(directions).forEach(dir => {
+          directions = yuchg.shuffle(directions)
+          for (let m=0; m<directions.length; m++) {
+            let dir = directions[m]
             // 随机选取一个起始位置
             c = samplePos(dir, w);
             if (!c.valid) {
-              return true;
+              continue;
             }
 
+            logger.warn('select word ===', wordIndex, dir, w)
             if (dir === 1) {
               for (let j = 0; j < w.length; j++) {
                 data[c.row][c.col + j].word = w[j];
@@ -286,8 +289,8 @@ export default {
             num += w.length;
             success = true;
             valids.push(wordIndex);
-            return false;
-          });
+            break;
+          }
         }
         fail -= success ? 0 : 1;
         while (
