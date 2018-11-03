@@ -154,10 +154,15 @@ export default {
     },
     onClickAnswer() {
       let keys = document.querySelectorAll(
-        "svg.buddha-search .buddha-search-key"
+        "svg.buddha-search .buddha-cell-key"
       );
       keys.forEach(function(v) {
-        v.style.display = v.style.display === "none" ? "block" : "none";
+         v.classList.toggle("buddha-show")
+        if (v.tagName === "rect") {
+          v.style.fill = v.classList.contains("buddha-show") ? "#999" : "#fff";
+        } else {
+          v.style.fontWeight = v.classList.contains("buddha-show") ? "bold" : "normal";
+        }
       });
     },
     searchGenerate() {
@@ -174,21 +179,14 @@ export default {
           this.currentLevel = this.levels.length - 1;
         }
 
-        //
-        if (this.form.type === "1") {
-          // 语文模式
-          this.searchChsGenerate();
-        } else {
-          // 英语模式
-          this.searchEngGenerate();
-        }
+        this.gridGenerate();
         return true;
       } catch (e) {
         logger.warn(e);
         return false;
       }
     },
-    searchChsGenerate() {
+    gridGenerate() {
       //
       const size = this.levels[this.currentLevel];
 
@@ -197,7 +195,7 @@ export default {
         this.content[i] = new Array(size).fill(null).map(v => {
           return {
             word: "",
-            visited: 0
+            key: false
           };
         });
       }
@@ -254,40 +252,44 @@ export default {
       let wordIndex = 0;
       let num = 0;
       let directions = [1, 2, 3]; // 水平 垂直 对角线
-      let fail = 5; // 允许失败次数，如果超过则中止
+      let fail = sortedWords.length; // 允许失败次数，如果超过则中止
       let c = { row: 0, col: 0, valid: false };
       let valids = [];
       while (num < maxnum && fail > 0) {
         let w = sortedWords[wordIndex];
-        // 如果一个方向找不到则换一个方向
         let success = false;
-        yuchg.shuffle(directions).forEach(dir => {
-          // 随机选取一个起始位置
-          c = samplePos(dir, w);
-          if (!c.valid) {
-            return true;
-          }
+        if (w.length < size * 0.8) {
+          // 如果一个方向找不到则换一个方向
+          yuchg.shuffle(directions).forEach(dir => {
+            // 随机选取一个起始位置
+            c = samplePos(dir, w);
+            if (!c.valid) {
+              return true;
+            }
 
-          if (dir === 1) {
-            for (let j = 0; j < w.length; j++) {
-              data[c.row][c.col + j].word = w[j];
+            if (dir === 1) {
+              for (let j = 0; j < w.length; j++) {
+                data[c.row][c.col + j].word = w[j];
+                data[c.row][c.col + j].key = true;
+              }
+            } else if (dir === 2) {
+              for (let j = 0; j < w.length; j++) {
+                data[c.row + j][c.col].word = w[j];
+                data[c.row + j][c.col].key = true;
+              }
+            } else {
+              for (let j = 0; j < w.length; j++) {
+                data[c.row + j][c.col + j].word = w[j];
+                data[c.row + j][c.col + j].key = true;
+              }
             }
-          } else if (dir === 2) {
-            for (let j = 0; j < w.length; j++) {
-              data[c.row + j][c.col].word = w[j];
-            }
-          } else {
-            for (let j = 0; j < w.length; j++) {
-              data[c.row + j][c.col + j].word = w[j];
-            }
-          }
-          num += w.length;
-          success = true;
-          valids.push(wordIndex);
-          return false;
-        });
-
-        fail += success ? 0 : 1;
+            num += w.length;
+            success = true;
+            valids.push(wordIndex);
+            return false;
+          });
+        }
+        fail -= success ? 0 : 1;
         while (
           valids.indexOf(wordIndex) >= 0 &&
           wordIndex < sortedWords.length
@@ -305,11 +307,11 @@ export default {
       wordIndex = wordIndex % sortedWords.length;
       while (num < maxnum) {
         wordIndex = yuchg.randomNumber(sortedWords.length - 1, 0);
-        let w = sortedWords[wordIndex]
+        let w = sortedWords[wordIndex];
         for (let i = 0; i < w.length; i++) {
           disturb.push(w[i]);
-        };
-         num += w.length;
+        }
+        num += w.length;
       }
 
       disturb = yuchg.shuffle(disturb);
@@ -320,14 +322,8 @@ export default {
             v.word = disturb[yuchg.randomNumber(disturb.length - 1, 0)];
           }
         });
-        logger.warn(
-          row.map(v => {
-            return v.word;
-          })
-        );
       });
     },
-    searchEngGenerate() {},
     searchLine(option) {
       let line = document.createElementNS(ycSvgNS, "line");
       line.setAttribute("x1", option.startx);
@@ -358,6 +354,7 @@ export default {
       rect.setAttribute("height", option.height);
       rect.setAttribute("stroke", "#333");
       rect.setAttribute("fill", "#fff");
+      option.key && rect.classList.add("buddha-cell-key");
       rect.classList.add("buddha-cell-bg");
       g.appendChild(rect);
 
@@ -368,6 +365,7 @@ export default {
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("dominant-baseline", "central");
       text.classList.add("buddha-cell-text");
+      option.key && text.classList.add("buddha-cell-key");
       text.textContent = option.text;
       g.appendChild(text);
       return g;
@@ -382,46 +380,43 @@ export default {
       let offsety = (this.height - boxHeight) / 2;
 
       // 计算偏移位置
-        let g = document.createElementNS(ycSvgNS, "g");
-        g.setAttribute(
-          "transform",
-          `translate(${offsetx}, ${offsety})`
-        );
+      let g = document.createElementNS(ycSvgNS, "g");
+      g.setAttribute("transform", `translate(${offsetx}, ${offsety})`);
 
       //边框
       let rect = document.createElementNS(ycSvgNS, "rect");
       rect.setAttribute("width", boxWidth);
       rect.setAttribute("height", boxHeight);
       rect.setAttribute("stroke", "#333");
-      rect.setAttribute("stroke-width", "3");
+      rect.setAttribute("stroke-width", "5");
       rect.setAttribute("fill", "#fff");
       rect.classList.add("buddha-cell-bg");
       g.appendChild(rect);
- 
-        for (let i = 0; i < size; i++) {
-          for (let j = 0; j < size; j++) {
-            let cell = data[i][j];
-            g.appendChild(
-              this.searchCell({
-                translatex: j * 40,
-                translatey: i * 40,
-                width: 40,
-                height: 40,
-                text: cell.word
-              })
-            );
-          }
+
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          let cell = data[i][j];
+          g.appendChild(
+            this.searchCell({
+              translatex: j * 40,
+              translatey: i * 40,
+              width: 40,
+              height: 40,
+              text: cell.word,
+              key: cell.key
+            })
+          );
         }
+      }
 
-        this.svg.appendChild(g);
-
+      this.svg.appendChild(g);
     },
-    statWords(data) {
+    statWords(type, data) {
       this.words = [];
       for (let sec of Object.values(data)) {
         sec.forEach(ch => {
           ch.forEach(v => {
-            this.words.push(v);
+            this.words.push(type === "1" ? v : v[0].toLowerCase());
           });
         });
       }
@@ -435,7 +430,7 @@ export default {
         url: this.url + `/${this.types[this.form.type]}/${this.grade}`,
         success: data => {
           if (data.result === 0) {
-            this.statWords(data.content);
+            this.statWords(type, data.content);
             this.loadedType = type;
             callback && callback();
           } else {
