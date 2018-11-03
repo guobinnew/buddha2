@@ -54,7 +54,7 @@
   margin: 20px 0px;
 }
 
-.buddha-sudoku {
+.buddha-puzzle {
   overflow: visible;
 }
 
@@ -116,61 +116,61 @@ export default {
         {
           width: 50,
           height: 50,
-          row: 4,
+          row: 6,
           col: 4
         },
         {
           width: 50,
           height: 50,
-          row: 5,
+          row: 8,
           col: 5
         },
         {
           width: 50,
           height: 50,
-          row: 10,
+          row: 12,
           col: 10
         },
         {
           width: 40,
           height: 40,
-          row: 15,
+          row: 18,
           col: 15
         },
         {
           width: 30,
           height: 30,
-          row: 20,
+          row: 25,
           col: 20
         },
         {
           width: 30,
           height: 30,
-          row: 25,
+          row: 28,
           col: 25
         },
         {
           width: 20,
           height: 20,
-          row: 30,
+          row: 33,
           col: 30
         },
         {
           width: 20,
           height: 20,
-          row: 40,
+          row: 42,
           col: 40
         },
         {
           width: 15,
           height: 15,
-          row: 50,
+          row: 52,
           col: 50
         },
         {
-          width: 10,
-          height: 10,
-          row: 60,
+          width: 12,
+          height: 12,
+          row: 62,
           col: 60
         }
       ],
@@ -198,7 +198,7 @@ export default {
         if (this.currentLevel >= this.cells.length) {
           this.currentLevel = this.cells.length - 1;
         }
-        //this.currentLevel = 1;
+
         const cell = this.cells[this.currentLevel];
         this.content = new Array(cell.row);
         for (let i = 0; i < cell.row; i++) {
@@ -270,72 +270,6 @@ export default {
             data[c.row + 1][c.col][1] = 1;
           }
         }
-
-        // const checkCell = (row, col) => {
-        //   if (data[row][col][4] === 0) {
-        //     return true;
-        //   }
-        //   return false;
-        // };
-
-        // let c = { row: 0, col: 0 };
-        // // 访问历史
-        // let history = [c];
-
-        // while (history.length > 0) {
-        //   c = history[0];
-        //   data[c.row][c.col][4] = 1;
-        //   let check = [];
-
-        //   if (c.col > 0 && checkCell(c.row, c.col - 1)) {
-        //     check.push(1);
-        //   }
-
-        //   if (c.row > 0 && checkCell(c.row - 1, c.col)) {
-        //     check.push(2);
-        //   }
-
-        //   if (c.col < cell.col - 1 && checkCell(c.row, c.col + 1)) {
-        //     check.push(3);
-        //   }
-
-        //   if (c.row < cell.row - 1 && checkCell(c.row + 1, c.col)) {
-        //     check.push(4);
-        //   }
-
-        //   let direction = 0;
-        //   if (check.length > 0) {
-        //     direction = check[yuchg.randomNumber(check.length - 1, 0)];
-
-        //     if (direction === 1) {
-        //       data[c.row][c.col][0] = 1; // 表示可通过
-        //       c.col -= 1;
-        //       data[c.row][c.col][2] = 1;
-        //     }
-
-        //     if (direction === 2) {
-        //       data[c.row][c.col][1] = 1;
-        //       c.row -= 1;
-        //       data[c.row][c.col][3] = 1;
-        //     }
-
-        //     if (direction === 3) {
-        //       data[c.row][c.col][2] = 1;
-        //       c.col += 1;
-        //       data[c.row][c.col][0] = 1;
-        //     }
-
-        //     if (direction === 4) {
-        //       data[c.row][c.col][3] = 1;
-        //       c.row += 1;
-        //       data[c.row][c.col][1] = 1;
-        //     }
-
-        //     history.push(Object.assign({},c))
-        //   } else {
-        //     c = history.splice(0, 1);
-        //   }
-        // }
 
         data[0][0][0] = 1;
         data[cell.row - 1][cell.col - 1][2] = 1;

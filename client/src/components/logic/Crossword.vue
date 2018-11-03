@@ -25,7 +25,7 @@
             </el-collapse-item>
         </el-collapse>
         <div class="buddha-svg-wrap">
-          <svg class="buddha-sudoku" :width='width' :height='height' version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg class="buddha-crossword" :width='width' :height='height' version="1.1" xmlns="http://www.w3.org/2000/svg">
           </svg>
         </div>
     </div>
@@ -57,7 +57,7 @@
   margin: 20px 0px;
 }
 
-.buddha-sudoku {
+.buddha-corssword {
   overflow: visible;
 }
 
@@ -114,7 +114,7 @@ export default {
         number: 1
       },
       svg: null,
-      width: 600,
+      width: 800,
       height: 800,
       cellWidth: 40,
       cellHeight: 40,
@@ -126,8 +126,8 @@ export default {
   methods: {
     onClickTest() {
       this.content = [];
-      this.sudokuGenerate();
-      this.makeSudoku(this.content);
+      this.crosswordGenerate();
+      this.makeCrossword(this.content);
     },
     onClickExport() {
       // 导出为PNG文件
@@ -142,129 +142,16 @@ export default {
         v.style.display = v.style.display === "none" ? "block" : "none";
       });
     },
-    sudokuGenerate() {
-      // 生成数独数据
+    crosswordGenerate() {
+      // 生成填字游戏数据
       try {
-        // 先生成一个数独矩阵作为模版
-        const data = new Array(9);
-        for (let i = 0; i < 9; i++) {
-          data[i] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        }
 
-        const checkColumn = (n, col) => {
-          let result = true;
-          for (let i = 0; i < 9; i++) {
-            if (data[i][col] === n) {
-              result = false;
-              break;
-            }
-          }
-          return result;
-        };
-
-        const checkRow = (n, row) => {
-          let result = true;
-          for (let i = 0; i < 9; i++) {
-            if (data[row][i] === n) {
-              result = false;
-              break;
-            }
-          }
-          return result;
-        };
-
-        const checkBlock = (n, x, y) => {
-          let result = true;
-          let sx = x * 3;
-          let sy = y * 3;
-          for (let i = sx; i < sx + 3; i++) {
-            for (let j = sy; j < sy + 3; j++) {
-              if (data[i][j] === n) {
-                result = false;
-                break;
-              }
-            }
-            if (!result) {
-              break;
-            }
-          }
-          return result;
-        };
-
-        let n = yuchg.randomNumber(9, 1);
-        for (let i = 0; i < 9; i++) {
-          for (let j = 0; j < 9; j++) {
-            let p = Math.floor(i / 3.0);
-            let q = Math.floor(j / 3.0);
-            for (let k = 0; k < 9; k++) {
-              if (checkColumn(n, j) && checkRow(n, i) && checkBlock(n, p, q)) {
-                data[i][j] = n;
-                break;
-              } else {
-                n = (n % 9) + 1;
-              }
-            }
-          }
-          n = (n % 9) + 1;
-        }
-
-        const upset = () => {
-          //按行交换
-          let tmp = 0;
-          for (let i = 0; i < 9; i++) {
-            let n = yuchg.randomNumber(2, 0) * 3;
-            let p = yuchg.randomNumber(2, 0) + n;
-            for (let j = 0; j < 9; j++) {
-              tmp = data[n][j];
-              data[n][j] = data[p][j];
-              data[p][j] = tmp;
-            }
-          }
-          //按列交换
-          for (let i = 0; i < 9; i++) {
-            let n = yuchg.randomNumber(2, 0) * 3;
-            let q = yuchg.randomNumber(2, 0) + n;
-            for (let j = 0; j < 9; j++) {
-              tmp = data[j][n];
-              data[j][n] = data[j][q];
-              data[j][q] = tmp;
-            }
-          }
-        };
-
-        const maskCells = level => {
-          const maxLevel = 7;
-          let min = 1;
-          let max = 1;
-          if (level > maxLevel) {
-            level = maxLevel;
-          }
-
-          let copy = yuchg.cloneObject(data);
-          // 每次从每行随机抽取一个
-          let arr = [].concat(this.numArr);
-          for (let i = 0; i < level; i++) {
-            arr = yuchg.shuffle(arr);
-            for (let j = 0; j < arr.length; j++) {
-              let v = copy[j][arr[j] - 1];
-              if (yuchg.isNumber(v)) {
-                copy[j][arr[j] - 1] = { value: v };
-              }
-            }
-          }
-          return copy;
-        };
-
-        const currentLevel = Number(this.level) + Number(this.form.level);
-        for (let i = 0; i < this.form.number; i++) {
-          upset();
-          this.content.push(maskCells(currentLevel));
-        }
+  
       } catch (e) {
         logger.warn(e);
       }
     },
-    sudokuLine(option) {
+    crosswordLine(option) {
       let line = document.createElementNS(ycSvgNS, "line");
       line.setAttribute("x1", option.startx);
       line.setAttribute("y1", option.starty);
@@ -278,7 +165,7 @@ export default {
       );
       return line;
     },
-    sudokuCell(option) {
+    crosswordCell(option) {
       let g = document.createElementNS(ycSvgNS, "g");
       g.setAttribute("display", "block");
       g.setAttribute(
@@ -315,63 +202,13 @@ export default {
       g.appendChild(text);
       return g;
     },
-    makeSudoku(data) {
+    makeCrossword(data) {
       $(this.svg).empty();
 
-      let offsetx = (this.width - 360) / 2;
-      for (let m = 0; m < data.length; m++) {
-        // 计算偏移位置
-        let g = document.createElementNS(ycSvgNS, "g");
-        g.setAttribute(
-          "transform",
-          `translate(${offsetx}, ${m * (360 + 80)})`
-        );
-        const box = data[m];
-        for (let i = 0; i < 9; i++) {
-          for (let j = 0; j < 9; j++) {
-            let cell = box[i][j];
-            g.appendChild(
-              this.sudokuCell({
-                translatex: j * this.cellWidth,
-                translatey: i * this.cellHeight,
-                width: this.cellWidth,
-                height: this.cellHeight,
-                text: yuchg.isNumber(cell) ? cell : cell.value,
-                isKey: !yuchg.isNumber(cell)
-              })
-            );
-          }
-        }
-
-        // 绘制分割线
-        for (let i = 0; i < 4; i++) {
-          g.appendChild(
-            this.sudokuLine({
-              startx: 0,
-              starty: i * 120,
-              endx: 360,
-              endy: i * 120,
-              strokeWidth: 3
-            })
-          );
-
-          g.appendChild(
-            this.sudokuLine({
-              startx: i * 120,
-              starty: 0,
-              endx: i * 120,
-              endy: 360,
-              strokeWidth: 3
-            })
-          );
-        }
-
-        this.svg.appendChild(g);
-      }
     }
   },
   mounted: function() {
-    this.svg = document.querySelector(".buddha-sudoku");
+    this.svg = document.querySelector(".buddha-crossword");
   },
   activated: function() {}
 };
