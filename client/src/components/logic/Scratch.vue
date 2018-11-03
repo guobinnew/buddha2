@@ -380,6 +380,7 @@
 import Scratch from "../../scratch/index"
 import yuchg from "../../base"
 import logger from "../../logger"
+
 logger.setLevel("debug")
 
 export default {

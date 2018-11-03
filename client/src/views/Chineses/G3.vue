@@ -160,7 +160,7 @@
 
         // 随机打乱
         if (this.form.mode == 2) {
-          selwords.sort(yuchg.randomSort);
+          selwords = yuchg.shuffle(selwords);
         }
         this.$refs.word.restart(selwords)
       },
