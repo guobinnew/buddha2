@@ -316,7 +316,7 @@ export default {
       };
 
       const cell = [];
-      logger.warn(data);
+
       // 生成曲线path数据
       data.forEach((w, i) => {
         let txtWidth = this.textWidth(w.word);
@@ -353,7 +353,6 @@ export default {
           y: offsety + 20 + w.index * space
         });
 
-        logger.warn(pts);
         g.appendChild(
           this.eyetrackPath({
             path: pts
@@ -390,7 +389,7 @@ export default {
     statWords(data) {
       let clone = yuchg.cloneObject(data);
       let num = 0;
-      logger.warn("stat", clone);
+
       for (let sec of Object.values(clone)) {
         sec.forEach(ch => {
           this.words.push(ch);

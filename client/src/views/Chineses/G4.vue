@@ -16,6 +16,7 @@
                             </el-form-item>
                            <el-form-item label="语速">
                                 <el-input-number v-model="form.rate" :step="1" :min="1" :max="100"></el-input-number>
+                                （10为标准语速）
                             </el-form-item>
                             <el-form-item label="听写模式">
                                 <el-radio-group v-model="form.mode">
