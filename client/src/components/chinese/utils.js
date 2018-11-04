@@ -28,7 +28,7 @@ const utils = {
       let voices = window.speechSynthesis.getVoices();
       // 只取第一个，国内window系统上微软语音引擎可用，Google需要翻墙
       for (let i=0; i<voices.length; i++) {
-        if (voices[i].lang.indexOf('zh-') === 0) {
+        if (voices[i].lang.indexOf('zh-') === 0 || voices[i].name === 'native') {
           list.push(voices[i])
           break
         }

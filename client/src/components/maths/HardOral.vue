@@ -120,6 +120,7 @@ export default {
   },
   methods: {
     onClickTest() {
+      this.activeName = '0'
       this.makeTest(Number(this.form.number), Number(this.form.column));
     },
     onClickAnswer() {

@@ -9,11 +9,11 @@
                 <el-collapse v-model="activeName" accordion>
                     <el-collapse-item title="听写选项" name="1">
                         <el-form ref="form" :model="form" label-width="80px">
-                            <el-form-item label="声音模式">
+                            <!-- <el-form-item label="声音模式">
                                 <el-radio-group v-model="form.voice">
                                     <el-radio v-for="(item, index) in voices" :label="index + 1">{{ item.name }}</el-radio>
                                 </el-radio-group>
-                            </el-form-item>
+                            </el-form-item> -->
                            <el-form-item label="语速">
                                 <el-input-number v-model="form.rate" :step="1" :min="1" :max="100"></el-input-number>
                                 （10为标准语速）
@@ -182,6 +182,7 @@
 
         let voice = this.voices[this.form.voice - 1]
         this.$refs.word.restart(selwords, {voice:voice, rate: this.form.rate / 10.0})
+        this.activeName = '0'
       },
       onClickReset() {
         this.$refs.word.restart();
@@ -204,11 +205,11 @@
       let source = this.$store.getters.source
       this.url = `http://localhost:3000/api/whole/${source}/words/g4`
       this.voices = utils.getVoices()
-      if (this.voices.length <= 0) {
-          this.$message.error('初始化语音引擎失败，无法听写')
-          this.buttons.start = true
-          this.buttons.again = true
-      }
+      // if (this.voices.length <= 0) {
+      //     this.$message.error('初始化语音引擎失败，无法听写')
+      //     this.buttons.start = true
+      //     this.buttons.again = true
+      // }
 
       ycUtils.ajaxGet({
         url:  this.url,

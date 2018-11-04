@@ -2,6 +2,10 @@
     <div class="container">
       <el-tabs type="border-card" @tab-click="onTabClick" value="test">
         <el-tab-pane label="单词听写" name="test">
+                      <el-alert :closable="false" :center="true"
+    title="原生语音引擎为英式发音，如需使用美式发音，请使用Chrome浏览器访问地址: http://localhost:3000/"
+    type="error">
+  </el-alert>
          <el-button-group>
           <el-button type="primary" icon="el-icon-edit" @click="onClickStart" :disabled="buttons.start">开始听写</el-button>
           <el-button type="success" icon="fa fa-repeat" @click="onClickReset" :disabled="buttons.again">重新开始</el-button>
@@ -9,11 +13,11 @@
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="听写选项" name="1">
            <el-form ref="form" :model="form" label-width="80px">
-              <el-form-item label="声音模式">
+              <!-- <el-form-item label="声音模式">
                                 <el-radio-group v-model="form.voice">
                                     <el-radio v-for="(item, index) in voices" :label="index + 1">{{ item.name }}</el-radio>
                                 </el-radio-group>
-                            </el-form-item>
+                            </el-form-item> -->
                            <el-form-item label="语速">
                                 <el-input-number v-model="form.rate" :step="1" :min="1" :max="100"></el-input-number>
                                 （10为标准语速）
@@ -70,6 +74,10 @@
 
 .el-tabs {
   height: 100%;
+}
+
+.el-alert {
+  margin-bottom: 10px;
 }
 
 .el-collapse {
@@ -175,6 +183,7 @@ export default {
       }
         let voice = this.voices[this.form.voice - 1]
         this.$refs.word.restart(selwords, {voice:voice, rate: this.form.rate / 10.0})
+        this.activeName = '0'
  
     },
     onClickReset() {
