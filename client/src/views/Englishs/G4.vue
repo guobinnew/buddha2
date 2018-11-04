@@ -3,12 +3,21 @@
       <el-tabs type="border-card" @tab-click="onTabClick" value="test">
         <el-tab-pane label="单词听写" name="test">
          <el-button-group>
-          <el-button type="primary" icon="el-icon-edit" @click="onClickStart">开始听写</el-button>
-          <el-button type="success" icon="fa fa-repeat" @click="onClickReset">重新开始</el-button>
+          <el-button type="primary" icon="el-icon-edit" @click="onClickStart" :disabled="buttons.start">开始听写</el-button>
+          <el-button type="success" icon="fa fa-repeat" @click="onClickReset" :disabled="buttons.again">重新开始</el-button>
         </el-button-group>
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="听写选项" name="1">
            <el-form ref="form" :model="form" label-width="80px">
+              <el-form-item label="声音模式">
+                                <el-radio-group v-model="form.voice">
+                                    <el-radio v-for="(item, index) in voices" :label="index + 1">{{ item.name }}</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                           <el-form-item label="语速">
+                                <el-input-number v-model="form.rate" :step="1" :min="1" :max="100"></el-input-number>
+                                （10为标准语速）
+                            </el-form-item>
             <el-form-item label="听写模式">
               <el-radio-group v-model="form.mode">
                 <el-radio label="1">顺序</el-radio>
@@ -92,6 +101,7 @@
 
 <script>
 import Word from "../../components/english/Word.vue";
+import utils from "../../components/english/utils";
 import WordLibrary from "../../components/english/WordLibrary.vue";
 import yuchg from '../../base'
 import ycUtils from '../../utils'
@@ -103,7 +113,10 @@ export default {
   data: function() {
     return {
       activeName: "1",
+      voices: [],
       form: {
+         rate: 10,
+        voice: 1,
         grade: "",
         name: "",
         mode: "2",
@@ -118,6 +131,10 @@ export default {
         second: [],
         extend: []
       },
+      buttons: {
+            start: false,
+            again: false
+        },
       url: ''
     };
   },
@@ -156,7 +173,9 @@ export default {
       if (this.form.mode == 2) {
         selwords = yuchg.shuffle(selwords);
       }
-      this.$refs.word.restart(selwords)
+        let voice = this.voices[this.form.voice - 1]
+        this.$refs.word.restart(selwords, {voice:voice, rate: this.form.rate / 10.0})
+ 
     },
     onClickReset() {
       this.$refs.word.restart();
@@ -175,11 +194,13 @@ export default {
     // 读取单词表
     let source = this.$store.getters.source
     this.url = `http://localhost:3000/api/whole/${source}/glossary/g4`
+     this.voices = utils.getVoices()
+
     ycUtils.ajaxGet({
         url: this.url,
         success: (data) => {
           if (data.result === 0) {
-            this.updateWords(data.data)
+            this.updateWords(data.content)
           } else {
             this.$message.error('读取单词表失败 -' + data.err)
           }

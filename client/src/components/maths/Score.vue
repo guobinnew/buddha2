@@ -466,7 +466,6 @@
         url:  this.url,
         success:  (data) => {
           if (data.result === 0) {
-            logger.warn(data)
             vm.refreshChart(data.content)
           } else {
             vm.$message.error('读取成绩表失败 -' + data.err)

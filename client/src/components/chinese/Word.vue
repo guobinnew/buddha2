@@ -63,7 +63,8 @@
           answer: true
         },
         currentIndex: -1,
-        showAnswer: false
+        showAnswer: false,
+        voice: null
       };
     },
     computed: {
@@ -94,16 +95,16 @@
         this.showAnswer = false
         this.currentIndex -= 1
         this.updateButtons()
-        utils.readWord(this.currentWord)
+        utils.readWord(this.currentWord, this.voice)
       },
       onClickNext() {
         this.showAnswer = false
         this.currentIndex += 1
         this.updateButtons()
-        utils.readWord(this.currentWord)
+        utils.readWord(this.currentWord, this.voice)
       },
       onClickAgain() {
-        utils.readWord(this.currentWord)
+        utils.readWord(this.currentWord, this.voice)
       },
       onClickAnswer() {
         this.showAnswer = true
@@ -121,11 +122,12 @@
           this.buttons.answer = this.currentIndex < 0 || this.currentIndex >= this.content.length
         }
       },
-      restart(words) {
+      restart(words, voice) {
         if (yuchg.isArray(words)) {
           this.content = words
         }
         this.currentIndex = -1
+        this.voice = voice
         this.updateButtons()
       }
     },
