@@ -360,7 +360,6 @@ export default {
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
           let cell = data[i][j];
-          logger.warn(cell)
           g.appendChild(
             this.crosswordCell({
               translatex: j * 40,

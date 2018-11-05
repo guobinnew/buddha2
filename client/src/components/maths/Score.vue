@@ -226,7 +226,6 @@
             show: true,
             feature: {
               mark: {show: true},
-              dataView: {show: true, readOnly: true},
               restore: {show: true},
               saveAsImage: {show: true}
             }
