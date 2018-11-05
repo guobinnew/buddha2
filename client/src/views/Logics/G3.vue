@@ -13,7 +13,7 @@
             <Search level="2" :url="url" :grade="grade" ref="search"></Search>
         </el-tab-pane>
          <el-tab-pane label="视觉追踪">
-            <Eyetrack level="2" :url="url" :grade="grade" ref="eyetrack"></Eyetrack>
+            <Eyetrack :url="url" :grade="grade" ref="eyetrack"></Eyetrack>
         </el-tab-pane>
     </el-tabs>
 </template>

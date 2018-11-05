@@ -3,7 +3,6 @@
         <el-button-group>
             <el-button type="primary" icon="fa fa-arrow-left" @click="onClickTest">随机生成</el-button>
             <el-button type="success" icon="fa fa-arrow-right" @click="onClickExport">保存为图片</el-button>
-            <el-button type="danger" icon="fa fa-buysellads" @click="onClickAnswer">查看答案</el-button>
         </el-button-group>
         <el-collapse accordion>
             <el-collapse-item>
@@ -18,8 +17,12 @@
                             <el-radio label="3">困难</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="数目">
-                        <el-input-number v-model="form.number" :step="5" :min="10" :max="40"></el-input-number>
+                    <el-form-item label="类型">
+                        <el-radio-group v-model="form.type">
+                            <el-radio label="1">语文</el-radio>
+                            <el-radio label="2">英语</el-radio>
+                            <el-radio label="3">数学</el-radio>
+                        </el-radio-group>
                     </el-form-item>
                 </el-form>
             </el-collapse-item>
@@ -103,146 +106,113 @@ import yuchg from "../../base";
 import ycUtils from "../../utils";
 import $ from "jquery";
 import svg2png from "save-svg-as-png";
+import * as d3 from "d3";
 
 const ycSvgNS = "http://www.w3.org/2000/svg";
 
 export default {
-  props: ["level", "url", "grade"],
+  props: ["url", "grade"],
   data: function() {
     return {
       form: {
         level: "1",
-        number: 1
+        type: "1"
       },
-      loaded: false,
-      wordSum: 0,
+      loadedType: "",
       words: [],
       svg: null,
-      width: 800,
-      height: 800,
+      width: 1200,
+      height: 1600,
       content: [],
-      currentLevel: 0,
-      levels: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 20]
+      currentLevel: 1,
+      types: {
+        "1": "words",
+        "2": "glossary"
+      },
+      levels: [
+        { num: 10, fontSize: 50},
+        { num: 50, fontSize: 40},
+        { num: 100, fontSize: 30},
+        { num: 200, fontSize: 20}
+      ]
     };
   },
   computed: {},
   methods: {
     onClickTest() {
-      this.content = [];
-      this.eyetrackGenerate();
-      this.makeEyetrack(this.content);
+      const callback = () => {
+        this.content = [];
+        if (!this.eyetrackGenerate()) {
+          return;
+        }
+        this.makeEyetrack(this.content);
+      };
+      if (!this.loadedType !== this.form.type && this.form.type !== '3') {
+        this.fetchWords(this.form.type, callback);
+      } else {
+        callback();
+      }
     },
     onClickExport() {
       // 导出为PNG文件
       let date = yuchg.currentTimeString();
-      svg2png.saveSvgAsPng(this.svg, "数独" + date + ".png");
-    },
-    onClickAnswer() {
-      let keys = document.querySelectorAll(
-        "svg.buddha-sudoku .buddha-sudoku-key"
-      );
-      keys.forEach(function(v) {
-        v.style.display = v.style.display === "none" ? "block" : "none";
-      });
+      svg2png.saveSvgAsPng(this.svg, "视觉追踪" + date + ".png");
     },
     shuffleWords(num) {
-      // if (num < 10) {
-      //   num = 10
-      // }
-      num = 10;
-
-      let list = [];
-      while (list.length <= num) {
-        let ch = yuchg.randomNumber(this.words.length - 1, 0);
-        list = list.concat(this.words[ch]);
+      if (num < 10) {
+        num = 10;
       }
-
-      let indexs = new Array(num).fill(null).map((v, i) => {
-        return i;
-      });
-      indexs = yuchg.shuffle(indexs);
-
-      return indexs.map((v, i) => {
-        return { index: v, word: list[i] };
-      });
+      let list = [];
+      if (num >= this.words.length) {
+        list = this.words.map(v => {
+          return { word: v, value: yuchg.randomNumber(1000, 1) };
+        });
+      } else {
+        let selected = [];
+        while (list.length <= num) {
+          let index = yuchg.randomNumber(this.words.length - 1, 0);
+          if (selected.indexOf(index) < 0) {
+            list.push({
+              word: this.words[index],
+              value: yuchg.randomNumber(1000, 1)
+            });
+            selected.push(index);
+          }
+        }
+      }
+      list = yuchg.shuffle(list);
+      return list;
     },
     eyetrackGenerate() {
       // 生成填字游戏数据
       try {
-        if (!this.loaded) {
-          this.fetchWords();
-          this.$message.error("正在加载词汇表，请稍后重试");
-          return
-        }
-
-        if (this.wordSum < this.form.number) {
-          this.$message.error("数目太多，请减少数目或者录入语文或英语词汇");
-          return;
-        }
-        // 根据数据随机选取单词
-        this.content = this.shuffleWords(this.form.number);
+       
         // 根据难度确定曲线节点数目
-        this.currentLevel = Number(this.level) + Number(this.form.level);
-        if (this.currentLevel >= this.levels.length) {
-          this.currentLevel = this.levels.length - 1;
+        this.currentLevel = Number(this.form.level);
+        // 根据数据随机选取单词
+        if (this.form.type === '3') {
+          this.content = d3.range(this.levels[this.currentLevel].num).map(function(v, i) {
+              return {
+                name: "" + (i + 1),
+                count: yuchg.randomNumber(10000, 1000)
+              };
+          });
+        } else {
+           if (this.words.length < 10) {
+          this.$message.error("数目太多，请减少数目或者录入语文或英语词汇");
+          return false;
         }
-
+          this.content = this.shuffleWords(this.currentLevel * 10).map(function(v, i) {
+              return {
+                name: v,
+                count: yuchg.randomNumber(10000, 1000)
+              };
+          })
+        }
+        return true;
       } catch (e) {
         logger.warn(e);
       }
-    },
-    eyetrackLine(option) {
-      let line = document.createElementNS(ycSvgNS, "line");
-      line.setAttribute("x1", option.startx);
-      line.setAttribute("y1", option.starty);
-      line.setAttribute("x2", option.endx);
-      line.setAttribute("y2", option.endy);
-      line.setAttribute(
-        "style",
-        `stroke-width: ${
-          option.strokeWidth ? option.strokeWidth : 1
-        }; stroke: #333;`
-      );
-      return line;
-    },
-    textWidth(text) {
-      let t = document.createElementNS(ycSvgNS, "text");
-      t.textContent = text;
-      t.style.visibility = "hidden";
-      this.svg.appendChild(t);
-      let w = t.getComputedTextLength();
-      t.remove();
-      return w;
-    },
-    eyetrackPath(option) {
-      let path = document.createElementNS(ycSvgNS, "path");
-      path.classList.add("buddha-cell-path");
-      path.setAttribute(
-        "stroke-width",
-        option.strokeWidth ? option.strokeWidth : 1
-      );
-      let pt = option.path[0];
-      let d = `M ${pt.x} ${pt.y} `;
-      // 生成路径
-      if (option.path.length < 5) {
-        // 绘制折线
-        for (let i = 1; i < option.path.length; i++) {
-          pt = option.path[i];
-          d += `L ${pt.x} ${pt.y} `;
-        }
-      } else {
-        d += `L ${option.path[1].x} ${option.path[1].y}`// C ${option.path[2].x} ${option.path[2].y}, ${option.path[3].x} ${option.path[3].y}, ${option.path[4].x} ${option.path[4].y} `;
-        for (let i = 2; i < option.path.length - 1; i += 2) {
-          d += `T ${option.path[i].x} ${option.path[i].y}, ${option.path[i + 1].x} ${option.path[i + 1].y} `;
-        }
-         d += `L ${option.path[option.path.length - 1].x} ${option.path[option.path.length - 1].y} `;
-      }
-
-      path.setAttribute("d", d);
-      path.setAttribute("stroke", "#333");
-      path.setAttribute("fill", "#fff");
-      path.setAttribute("fill-opacity", 0);
-      return path;
     },
     eyetrackCell(option) {
       let g = document.createElementNS(ycSvgNS, "g");
@@ -284,130 +254,117 @@ export default {
     makeEyetrack(data) {
       $(this.svg).empty();
 
-      const ptnum = 1//this.levels[this.currentLevel];
-      // 绘制迷宫
-      let g = document.createElementNS(ycSvgNS, "g");
+      let svg = d3.select(this.svg),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+      let format = d3.format(",d");
 
-      let rect = document.createElementNS(ycSvgNS, "rect");
-      rect.setAttribute("width", this.width);
-      rect.setAttribute("height", this.height);
-      rect.setAttribute("stroke", "#fff");
-      rect.setAttribute("fill", "#fff");
-      rect.classList.add("buddha-cell-bg");
-      g.appendChild(rect);
-
-      let margin = 40;
-      let padding = 80;
-      let space = (this.height - 80) / this.content.length;
-      let offsety = margin;
-
-      let box = {
-        left: padding + 120,
-        right: this.width - padding - 120,
-        top: margin + 60,
-        bottom: this.height - margin - 60
-      };
-
-      const sample = (pt) => {
-        return {
-          x: yuchg.randomNumber(box.right, box.left),
-          y: yuchg.randomNumber(box.top, box.bottom)
-        };
-      };
-
-      const cell = [];
-
-      // 生成曲线path数据
-      data.forEach((w, i) => {
-        let txtWidth = this.textWidth(w.word);
-        // 计算起点
-        let pts = [];
-        pts.push( { x: padding, y: offsety + 20 })
-        let lastpt = { x: padding + 60, y: offsety + 20 }
-        pts.push(lastpt)
-
-
-        // 随机生成中间控制点
-        for (let j = 0; j < ptnum; j++) {
-          let newpt = sample(lastpt)
-          if ( j===0) {
-          //pts.push({x: lastpt.x, y: newpt.y})
-          pts.push({x: newpt.x, y: lastpt.y})
-          pts.push(newpt);
-          } else {
-             pts.push({x: newpt.x, y: lastpt.y})
-             pts.push(newpt);
+      let pack = d3
+        .pack()
+        .size([width, height])
+        .padding(1.5);
+      let num, pid;
+      let root = d3
+        .hierarchy({ children: data })
+        .sum(function(d) {
+          return d.count;
+        })
+        .each(function(d) {
+          if (d.parent == null) {
+            num = d.value;
           }
-          lastpt = newpt
-        }
-        pts.push({
-          x: this.width - padding,
-          y: lastpt.y
+          let id = d.data.name;
+          if (id) {
+            d.id = id;
+            d.class = id;
+          }
         });
-        pts.push({
-          x: this.width - padding -60,
-          y: offsety + 20 + w.index * space
-        });
-        pts.push({
-          x: this.width - padding,
-          y: offsety + 20 + w.index * space
-        });
-
-        g.appendChild(
-          this.eyetrackPath({
-            path: pts
-          })
-        );
-
-        // 绘制单词
-        cell.push({
-          translatex: this.width - padding,
-          translatey: offsety,
-          width: txtWidth + 16,
-          height: 40,
-          text: w.word
-        });
-        cell.push({
-          translatex: padding - 20,
-          translatey: offsety,
-          width: 40,
-          height: 40,
-          shape: "round",
-          text: "" + (i + 1)
+      let node = svg
+        .selectAll(".node")
+        .data(pack(root).leaves())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
         });
 
-        offsety += space;
+      node
+        .append("circle")
+        .attr("id", function(d) {
+          return d.id;
+        })
+        .attr("r", function(d) {
+          return d.r;
+        })
+        .style("stroke", function(d) {
+          return "#333";
+        })
+        .style("fill", function(d) {
+          return "#fff";
+        });
+
+      node
+        .append("clipPath")
+        .attr("id", function(d) {
+          return "clip-" + d.id;
+        })
+        .append("use")
+        .attr("xlink:href", function(d) {
+          return "#" + d.id;
+        });
+
+      node
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("font-size", `${this.levels[this.currentLevel].fontSize}`)
+        .attr("clip-path", function(d) {
+          return "url(#clip-" + d.id + ")";
+        })
+        .selectAll("tspan")
+        .data(function(d) {
+          var arr = new Array();
+          arr.push(d.class);
+          return arr; //圆内显示内容
+        })
+        .enter()
+        .append("tspan")
+        .attr("x", 0)
+        .attr("y", function(d, i, nodes) {
+          return `${i - nodes.length / 2 + 0.8}em`;
+        })
+        .text(function(d) {
+          return d;
+        });
+
+      node.append("title").text(function(d) {
+        return d.id;
       });
-
-      // 绘制索引
-      cell.forEach(v => {
-        g.appendChild(this.eyetrackCell(v));
+      node.on("click", function(d) {
+        clickBubble(d.id); //自定义点击事件
       });
-
-      this.svg.appendChild(g);
     },
-    statWords(data) {
-      let clone = yuchg.cloneObject(data);
-      let num = 0;
-
-      for (let sec of Object.values(clone)) {
+    statWords(type, data) {
+      this.words = [];
+      for (let sec of Object.values(data)) {
         sec.forEach(ch => {
-          this.words.push(ch);
-          num += ch.length;
+          ch.forEach(v => {
+            this.words.push(type === "1" ? v : v[0].toLowerCase());
+          });
         });
       }
-      this.wordSum = num;
     },
-    fetchWords(callback) {
+    fetchWords(type, callback) {
       if (this.url === "" || this.loaded) {
         return;
       }
+
       ycUtils.ajaxGet({
-        url: this.url + `/words/${this.grade}`,
+        url: this.url + `/${this.types[this.form.type]}/${this.grade}`,
         success: data => {
           if (data.result === 0) {
-            this.statWords(data.content);
-            this.loaded = true;
+            this.statWords(type, data.content);
+            this.loadedType = type;
             callback && callback();
           } else {
             this.$message.error("读取词汇表失败 -" + data.err);
@@ -418,7 +375,6 @@ export default {
   },
   mounted: function() {
     this.svg = document.querySelector(".buddha-eyetrack");
-    this.fetchWords();
   },
   activated: function() {}
 };
