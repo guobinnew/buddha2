@@ -165,17 +165,14 @@ export default {
       let list = [];
       if (num >= this.words.length) {
         list = this.words.map(v => {
-          return { word: v, value: yuchg.randomNumber(1000, 1) };
+          return v
         });
       } else {
         let selected = [];
         while (list.length <= num) {
           let index = yuchg.randomNumber(this.words.length - 1, 0);
           if (selected.indexOf(index) < 0) {
-            list.push({
-              word: this.words[index],
-              value: yuchg.randomNumber(1000, 1)
-            });
+            list.push(this.words[index]);
             selected.push(index);
           }
         }
@@ -254,16 +251,17 @@ export default {
     makeEyetrack(data) {
       $(this.svg).empty();
 
-      let svg = d3.select(this.svg),
-        width = +svg.attr("width"),
-        height = +svg.attr("height");
+      let svg = d3.select(this.svg)
+      let width = +svg.attr("width")
+      let height = +svg.attr("height")
       let format = d3.format(",d");
 
       let pack = d3
         .pack()
         .size([width, height])
         .padding(1.5);
-      let num, pid;
+      let num
+      let pid
       let root = d3
         .hierarchy({ children: data })
         .sum(function(d) {
