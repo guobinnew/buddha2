@@ -194,6 +194,7 @@ export default {
                 count: yuchg.randomNumber(10000, 1000)
               };
           });
+          this.content = yuchg.shuffle(this.content)
         } else {
            if (this.words.length < 10) {
           this.$message.error("数目太多，请减少数目或者录入语文或英语词汇");
@@ -206,6 +207,7 @@ export default {
               };
           })
         }
+       
         return true;
       } catch (e) {
         logger.warn(e);
