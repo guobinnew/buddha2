@@ -40,7 +40,8 @@ export default {
         "img/splash1.png",
         "img/splash2.jpg",
         "img/splash3.png",
-        "img/splash4.png"
+        "img/splash4.png",
+        "img/splash5.jpeg"
       ]
     };
   },

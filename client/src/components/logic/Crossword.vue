@@ -245,15 +245,18 @@ export default {
               continue;
             }
 
+            // 随机取一个字留下
+            let reserved = yuchg.randomNumber(w.length-1, 0)
+
             if (dir === 1) {
               for (let j = 0; j < w.length; j++) {
                 data[c.row][c.col + j].word = w[j];
-                data[c.row][c.col + j].key = true;
+                data[c.row][c.col + j].key = (j !== reserved);
               }
             } else {
               for (let j = 0; j < w.length; j++) {
                 data[c.row + j][c.col].word = w[j];
-                data[c.row + j][c.col].key = true;
+                data[c.row + j][c.col].key = (j !== reserved);
               }
             }
             num += w.length;
@@ -323,7 +326,7 @@ export default {
         text.classList.add("buddha-cell-text");
         text.textContent = option.text;
         if (option.isKey) {
-          text.classList.add("buddha-sudoku-key");
+          text.classList.add("buddha-crossword-key");
           text.style.fontWeight = "bold";
           text.style.display = "none";
         }
@@ -357,6 +360,7 @@ export default {
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
           let cell = data[i][j];
+          logger.warn(cell)
           g.appendChild(
             this.crosswordCell({
               translatex: j * 40,
@@ -364,7 +368,7 @@ export default {
               width: 40,
               height: 40,
               text: cell.word,
-              key: cell.key
+              isKey: cell.key
             })
           );
         }
