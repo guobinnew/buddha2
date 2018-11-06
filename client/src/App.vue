@@ -399,7 +399,7 @@
           this.dialogAuthVisible = true
         } else if (command === 'quit') {
           ycUtils.ajaxPost({
-            url: "http://localhost:3000/api/quit",
+            url: "/api/quit",
             success: (data) => {}
           })
         }
@@ -411,7 +411,7 @@
         }
 
         ycUtils.ajaxPost({
-          url: "http://localhost:3000/api/updateProfile",
+          url: "/api/updateProfile",
           data: this.form,
           success: (data) => {
             if (data.result == 0) { // 成功
@@ -441,7 +441,7 @@
         }
         // 提交验证请求
         ycUtils.ajaxPost({
-          url: "http://localhost:3000/api/login",
+          url: "/api/login",
           data: {pwd: ycUtils.sha256(this.authForm.pwd)},
           success: (data) => {
             if (data.result == 0) {
@@ -463,7 +463,7 @@
       this.showGradeName(this.activeGradeIndex);
       // 读取配置信息，初始化状态
       ycUtils.ajaxGet({
-        url: "http://localhost:3000/api/manifest",
+        url: "/api/manifest",
         success: (data) => {
           if (data.result == 0) {
             this.$store.commit("updateManifest", data.content);

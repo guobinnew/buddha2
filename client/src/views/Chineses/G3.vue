@@ -203,7 +203,7 @@
     mounted: function () {
       // 读取单词表
       let source = this.$store.getters.source
-      this.url = `http://localhost:3000/api/whole/${source}/words/g3`
+      this.url = `/api/whole/${source}/words/g3`
       this.voices = utils.getVoices()
     //   if (this.voices.length <= 0) {
     //       this.$message.error('初始化语音引擎失败，无法听写')

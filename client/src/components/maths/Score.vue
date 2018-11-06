@@ -474,7 +474,7 @@
     }
     },
     mounted: function () {
-      this.url = `http://localhost:3000/api/score/${this.source}/oral`
+      this.url = `/api/score/${this.source}/oral`
       this.form.date = utils.currentTimeString()
       this.chart = echarts.init(document.querySelector("#buddha-chart"));
       this.chart.setOption(this.chartOpt);

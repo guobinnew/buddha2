@@ -4,6 +4,7 @@ import CryptoJS from 'crypto-js'
 import $ from "jquery";
 
 const cryptoSecret = "unique@buddha2"
+const serverIp = "http://localhost:3000" //"http://www.uorion.com:3000"
 const utils = {
   sha256: function(text) {
     return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex)
@@ -22,7 +23,7 @@ const utils = {
   },
   ajaxPost: function (option) {
     $.ajax({
-      url: option.url,
+      url: serverIp + option.url,
       type: "POST",
       data: {data: utils.encodeJson(option.data)},
       dataType: "text", //指定服务器返回的数据类型
@@ -34,7 +35,7 @@ const utils = {
   },
   ajaxGet: function (option) {
     $.ajax({
-      url: option.url,
+      url: serverIp + option.url,
       type: "GET",
       dataType: "text", //指定服务器返回的数据类型
       success: function(data) {

@@ -198,7 +198,7 @@
     data: function () {
       return {
         urls: {
-          host: 'http://localhost:3000/api/score',
+          host: '/api/score',
           query: 'record',
           update: 'update'
         },

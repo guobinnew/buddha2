@@ -202,7 +202,7 @@ export default {
   created: function() {
     // 读取单词表
     let source = this.$store.getters.source
-    this.url = `http://localhost:3000/api/whole/${source}/glossary/g4`
+    this.url = `/api/whole/${source}/glossary/g4`
      this.voices = utils.getVoices()
 
     ycUtils.ajaxGet({
