@@ -44,7 +44,7 @@
     computed: {},
     created: function () {
       let source = this.$store.getters.source
-      this.url = `http://localhost:3000/api/whole/${source}`
+      this.url = `/api/whole/${source}`
       this.grade = 'g3'
     },
     mounted: function () {

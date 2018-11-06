@@ -1,7 +1,7 @@
 <template>
     <el-tabs type="border-card">
         <el-tab-pane label="每日口算">
-            <SimpleOral :source="source" ref="oral"></SimpleOral>
+            <MiddleOral :source="source" ref="oral"></MiddleOral>
         </el-tab-pane>
         <el-tab-pane label="成绩统计" name="score">
             <Score :source="source" ref="chart"></Score>
@@ -16,13 +16,13 @@
 </style>
 
 <script>
-  import SimpleOral from '../../components/maths/SimpleOral.vue'
+  import MiddleOral from '../../components/maths/MiddleOral.vue'
   import logger from '../../logger'
   import Score from '../../components/maths/Score.vue'
   import yuchg from "../../base"
 
   export default {
-    components: {SimpleOral, Score},
+    components: {MiddleOral, Score},
     data: function () {
       return {
         source: 'g3'
