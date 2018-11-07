@@ -11,7 +11,6 @@ var settings = require('./setting')
 var uuidv4 = require('uuid/v4')
 
 var cryptoSecret = 'unique@buddha2'
-
 function isString(val) {
   return typeof val === 'string'
 }
@@ -32,7 +31,7 @@ function encodeJson(json) {
 }
 
 // 发送结果
-function sendJson(res, data, crypto = true) {
+function sendJson(res, data, crypto = false) {
   if (crypto) {
     res.send(encodeJson(data))
   } else {
@@ -102,7 +101,7 @@ function writeDBFileSync(filepath, data, emptyContent) {
 
 router.post('*', function (req, res, next) {
   if (isString(req.body.data)) {
-    req.body.content = JSON.parse(decodeJson(req.body.data))
+    req.body.content = JSON.parse(req.body.data)
   }
   next()
 })
