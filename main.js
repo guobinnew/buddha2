@@ -9,7 +9,7 @@ const url = require('url')
 // 启动前台服务
 const cp = require('child_process')
 // 用于调试
-//let instance = cp.spawn('node',[path.join(__dirname,'dist/server.js')])
+let instance = cp.spawn('node',[path.join(__dirname,'dist/server.js')])
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
