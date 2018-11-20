@@ -30,6 +30,7 @@
               <el-checkbox-group v-model="form.style">
                 <el-checkbox label="1">加减</el-checkbox>
                 <el-checkbox label="2">乘除</el-checkbox>
+                <el-checkbox label="3">综合</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
             <el-form-item label="列数">

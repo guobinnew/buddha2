@@ -466,7 +466,9 @@
         url: "/api/manifest",
         success: (data) => {
           if (data.result == 0) {
+            console.log(data)
             this.$store.commit("updateManifest", data.content);
+           
             this.updateProfile();
             this.updateFooter();
           } else {
