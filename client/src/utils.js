@@ -5,7 +5,7 @@ import $ from "jquery"
 
 const localServer = true
 function serverIp() {
-  return localServer ? "http://localhost:3000" : "https://www.uorion.com"
+  return localServer ? "http://localhost:3100" : "https://www.uorion.com"
 }
 
 const utils = {

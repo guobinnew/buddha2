@@ -112,26 +112,26 @@ const utils = {
     let eq = '='
 
     if (level === 1) {
-      // 随机取1个数字
+      // 随机取2个数字
       a = randomNumber(99, 10)
-      // 随机取第2个数字
-      b = randomNumber(9, 1)
+      // 随机取1个数字
+      b = randomNumber(9, 2)
     } else if (level === 2) {
-      // 随机取1个数字
-      a = randomNumber(99, 10)
-      // 随机取第2个数字
-      b = randomNumber(99, 10)
+      // 随机取2个数字
+      a = randomNumber(99, 10) * 10
+      // 随机取第1个数字
+      b = randomNumber(9, 2)
     } else {
-      // 随机取1个数字
+      // 随机取3个数字
       a = randomNumber(999, 100)
-      // 随机取第2个数字
-      b = randomNumber(99, 10)
+      // 随机取1个数字
+      b = randomNumber(9, 2)
     }
     res = a * b
 
     let tmp = 0
     if (style === 2) { // 除法
-      if (a > b) {
+      if (a < b) {
         tmp = b
         b = a
         a = res

@@ -52,7 +52,7 @@
           </el-collapse-item>
         </el-collapse>
         <div id="buddha-page" class="buddha-page">
-          <Page v-if="content" :content="content"></Page>
+          <Page v-if="content" :content="content" :minLength="120"></Page>
         </div>
     </div>
 </template>
@@ -110,7 +110,7 @@ export default {
         grade: "",
         name: "",
         date: "",
-        number: 40,
+        number: 20,
         level: "2",
         column: "4",
         style: ["1"]

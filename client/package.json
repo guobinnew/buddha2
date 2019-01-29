@@ -20,6 +20,7 @@
     "html2canvas": "^1.0.0-alpha.12",
     "jquery": "^3.3.1",
     "jspdf": "^1.4.1",
+    "localforage": "^1.7.3",
     "save-svg-as-png": "^1.4.6",
     "three": "^0.96.0",
     "three-gltf-loader": "^1.96.0",
