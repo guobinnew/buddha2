@@ -70,6 +70,8 @@ const utils = {
 
       if (style < 2) {
         return utils.randomSimpleTest(level)
+      } else if (style === 3) {
+        return utils.randomSeqTest(level)
       }
 
       let a = 0
@@ -83,10 +85,16 @@ const utils = {
       // 随机取第2个数字
       b = randomNumber(9, 2)
       if (level === 1) {
-      } else if (level === 2) {
-        a *= 10
+      } else if (level === 2 ) {
+        if (op !== '÷') {
+            a *= 10
+        }
       } else {
-        a *= 100
+          if (op !== '÷') {
+              a *= 100
+          } else {
+              a *= 10
+          }
       }
       res = a * b
       let tmp = 0
@@ -97,6 +105,46 @@ const utils = {
       }
   
       let arr = [a, op, b, eq]
+      return {
+        q: arr.join(' '),
+        a: res
+      }
+    },
+
+    randomSeqTest: function(level = 1){
+
+      let first = utils.randomMiddleTest(2, level)
+
+      let a = first.a
+      let b = 0
+      let res = 0
+      let op = Opers[randomNumber(Opers.length - 1)]
+      let eq = '='
+      let max = 1000
+      let min = 1
+
+      if (a >= 1000){
+        op = '-'
+        b = randomNumber(999, 100)
+        res = a - b
+      } else if (a <= 100) {
+        op = '+'
+        b = randomNumber(max - a - 1, 100)
+        res = a + b
+      } else {
+        do {
+          // 随机取第2个数字
+          if (op === '+') {
+            b = randomNumber(max - a - 1, 100)
+            res = a + b
+          } else {
+            b = randomNumber(a - 1, 100)
+            res = a - b
+          }
+        } while (res < min || res > max)
+      }
+
+      let arr = [first.q.replace(/=/g,''), op, b, eq]
       return {
         q: arr.join(' '),
         a: res

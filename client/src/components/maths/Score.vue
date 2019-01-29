@@ -220,7 +220,7 @@
             bottom: '15%'
           },
           legend: {
-            data: ["题目总数", "错误数目", "完成时间"]
+            data: ["题目总数", "错误数目", "完成时间", "平均完成时间"]
           },
           toolbox: {
             show: true,
@@ -300,6 +300,19 @@
               markLine: {
                 data: [{type: "average", name: "平均值"}]
               }
+            },
+             {
+              name: "平均完成时间",
+              type: "line",
+              smooth: true,
+              yAxisIndex: 1,
+              data: [],
+              markPoint: {
+                data: [
+                  {type: "max", name: "最大值"},
+                  {type: "min", name: "最小值"}
+                ]
+              }
             }
           ]
         };
@@ -372,6 +385,8 @@
         let chart_sum = new Array(data.length)
         let chart_wrong = new Array(data.length)
         let chart_time = new Array(data.length)
+        let chart_averagetime = new Array(data.length)
+
 
         // 遍历数据项
         data.forEach( (value, index) => {
@@ -379,6 +394,8 @@
           chart_sum[index] = value.sum
           chart_wrong[index] = value.wrong
           chart_time[index] = value.time
+          let right = value.sum - value.wrong
+          chart_averagetime[index] = right > 0 ? Math.round((value.time / right) *10) : 0
         })
 
         // 绘制图表
@@ -401,6 +418,11 @@
               // 根据名字对应到相应的系列
               name: '完成时间',
               data: chart_time
+            },
+             {
+              // 根据名字对应到相应的系列
+              name: '平均完成时间',
+              data: chart_averagetime
             }
           ]
         })
