@@ -80,7 +80,7 @@ const utils = {
   
       // 随机取1个数字
       a = randomNumber(9, 2)
-      // 随机取第2个数字
+      // 随机取第1个数字
       b = randomNumber(9, 2)
       if (level === 1) {
       } else if (level === 2) {
@@ -102,6 +102,47 @@ const utils = {
         a: res
       }
     },
+
+        // 随机生一个乘除计算
+        randomMiddleTest2: function(style, level = 1) {
+
+          if (style < 2) {
+            return utils.randomSimpleTest(level)
+          }
+    
+          let a = 0
+          let b = 0
+          let res = 0
+          let op = Opers2[randomNumber(Opers2.length - 1)]
+          let eq = '='
+      
+          // 随机取1个数字
+          a = randomNumber(9, 2)
+          // 随机取第2个数字
+          b = randomNumber(50, 10)
+          if (level === 1) {
+          } else if (level === 2) {
+            a *= 10
+          }
+
+          res = a * b
+          let tmp = 0
+          if (op === '÷') { // 除法
+            tmp = a
+            a = res
+            res = tmp
+
+            tmp = b
+            b = res
+            res = tmp
+          }
+      
+          let arr = [a, op, b, eq]
+          return {
+            q: arr.join(' '),
+            a: res
+          }
+        },
 
   // 随机生一个乘除计算
   randomHardTest: function(style, level = 1) {

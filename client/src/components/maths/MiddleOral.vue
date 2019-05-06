@@ -186,7 +186,7 @@ export default {
         if (i % col == 0) {
           row = [];
         }
-        row.push(utils.randomMiddleTest(ops[i], level));
+        row.push(utils.randomMiddleTest2(ops[i], level));
         if (i % col == col - 1) {
           list.push([].concat(row));
         }

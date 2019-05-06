@@ -5,3 +5,8 @@
 
 ## 数学
 ![image](https://github.com/guobinnew/buddha2/blob/master/screenshots/mathstat.png)
+
+## 使用说明
+1. 启动服务器
+   npm run nodemon:server
+2. 通过Vue ui启动app
