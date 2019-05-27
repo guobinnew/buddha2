@@ -58,7 +58,7 @@ const utils = {
       }
     } while (res < min || res > max)
 
-    let arr = [a, op, b, eq]
+    let arr = [a/10, op, b/10, eq]
     return {
       q: arr.join(' '),
       a: res
