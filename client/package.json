@@ -21,7 +21,7 @@
     "jquery": "^3.3.1",
     "jspdf": "^1.4.1",
     "save-svg-as-png": "^1.4.6",
-    "three": "^0.96.0",
+    "three": "^0.137.0",
     "three-gltf-loader": "^1.96.0",
     "three-orbitcontrols": "^2.96.2",
     "uuid": "^3.3.2",
