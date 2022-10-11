@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "canvg": "^1.5.3",
+    "canvg": "^4.0.1",
     "crypto-js": "^3.1.9-1",
     "d3": "^5.7.0",
     "echarts": "^4.2.0-rc.2",
@@ -19,7 +19,7 @@
     "font-awesome": "^4.7.0",
     "html2canvas": "^1.0.0-alpha.12",
     "jquery": "^3.3.1",
-    "jspdf": "^1.4.1",
+    "jspdf": "^2.5.1",
     "save-svg-as-png": "^1.4.6",
     "three": "^0.96.0",
     "three-gltf-loader": "^1.96.0",
